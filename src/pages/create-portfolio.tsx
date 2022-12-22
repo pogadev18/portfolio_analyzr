@@ -2,6 +2,8 @@ import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useSession } from 'next-auth/react';
 
+import PortfolioForm from '@/root/components/portfolioForm';
+
 import { requireAuth } from '@/root/utils/requireAuth';
 
 const CreatePortfolio = () => {
@@ -16,6 +18,7 @@ const CreatePortfolio = () => {
       </Head>
       <main>
         <h1>Create Portfolio</h1>
+        <PortfolioForm />
         <p>{session?.user?.name}</p>
       </main>
     </>

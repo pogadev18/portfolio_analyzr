@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // Necessary for Next auth
 model Account {
   id                String  @id @default(cuid())
@@ -51,4 +50,14 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Portfolio {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy   String
+  name        String
+  description String?
 }
