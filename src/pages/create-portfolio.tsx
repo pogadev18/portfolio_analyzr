@@ -1,4 +1,4 @@
-import { GetServerSidePropsContext } from 'next';
+import type { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useSession } from 'next-auth/react';
 
@@ -28,7 +28,7 @@ const CreatePortfolio = () => {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await requireAuth(context, ({ session }) => {
     return {
-      props: { session: session },
+      props: { session },
     };
   });
 }

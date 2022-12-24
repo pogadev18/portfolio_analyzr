@@ -7,8 +7,11 @@ import { trpc } from '@/root/utils/trpc';
 
 const PortfolioForm = () => {
   const { data: session } = useSession();
+  const trpcUtils = trpc.useContext();
 
-  const { mutateAsync: createPortfolio, isLoading } = trpc.portfolio.create.useMutation();
+  const { mutateAsync: createPortfolio, isLoading } = trpc.portfolio.create.useMutation({
+    onSuccess: () => trpcUtils.portfolio.getAll.invalidate(),
+  });
 
   const {
     register,
@@ -20,7 +23,7 @@ const PortfolioForm = () => {
 
   function onSubmit(values: CreatePortfolio) {
     const data = {
-      createdBy: session?.user?.name ?? '',
+      userId: session?.user?.id ?? '',
       ...values,
     };
 
