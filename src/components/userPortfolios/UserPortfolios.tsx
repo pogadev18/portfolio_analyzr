@@ -1,6 +1,8 @@
 import type { Portfolio } from '.prisma/client';
 import { useRouter } from 'next/router';
 
+import PortfolioCard from '@/root/components/portfolioCard';
+
 interface IUserPortfolios {
   portfolios: Portfolio[];
 }
@@ -10,12 +12,7 @@ const UserPortfolios = ({ portfolios }: IUserPortfolios) => {
   return (
     <div className="text-center text-white">
       {portfolios?.length > 0 ? (
-        portfolios.map((portfolio) => (
-          <div key={portfolio.id} className="rounded border p-3">
-            <p className="text-xl font-bold">{portfolio.name}</p>
-            <p>{portfolio.description}</p>
-          </div>
-        ))
+        portfolios.map((portfolio) => <PortfolioCard key={portfolio.id} portfolio={portfolio} />)
       ) : (
         <>
           <p>it looks like you do not have a portfolio yet</p>
