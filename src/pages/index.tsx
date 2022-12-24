@@ -10,7 +10,7 @@ import LoadingSpinner from '@/root/components/loadingSpinner';
 const Home: NextPage = () => {
   const { data: session } = useSession();
 
-  const { data: userPortfolios, isLoading: loadingPortfolios } = trpc.portfolio.getAll.useQuery(
+  const { data: userPortfolios, fetchStatus } = trpc.portfolio.getAll.useQuery(
     undefined, // no input
     {
       enabled: !!session,
@@ -31,7 +31,7 @@ const Home: NextPage = () => {
             ETFs Portfolio <span className="text-[hsl(280,100%,70%)]">Analyzr</span>
           </h1>
 
-          {loadingPortfolios && <LoadingSpinner />}
+          {fetchStatus === 'fetching' && <LoadingSpinner />}
           {userPortfolios ? <UserPortfolios portfolios={userPortfolios} /> : null}
         </div>
       </main>
