@@ -1,6 +1,9 @@
 import { type AppType } from 'next/app';
 import { type Session } from 'next-auth';
 import { SessionProvider } from 'next-auth/react';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+import Header from '@/root/components/header';
 
 import { trpc } from '../utils/trpc';
 
@@ -12,7 +15,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
+      <Header />
       <Component {...pageProps} />
+      <ReactQueryDevtools />
     </SessionProvider>
   );
 };
