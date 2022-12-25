@@ -43,23 +43,31 @@ const PortfolioPage = () => {
               add investments
             </button>
 
-            <ul className="p-10">
-              <li>
-                <button type="button" className="w-32 rounded bg-amber-500 p-5 hover:bg-amber-200">
-                  all
-                </button>
-              </li>
-              {investmentYears?.map((year) => (
-                <li key={year}>
+            <section className="flex p-10">
+              <ul className="years-list">
+                <li>
                   <button
                     type="button"
-                    className="my-2 w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
+                    className="w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
                   >
-                    {year}
+                    all
                   </button>
                 </li>
-              ))}
-            </ul>
+                {investmentYears?.map((year) => (
+                  <li key={year}>
+                    <button
+                      type="button"
+                      className="my-2 w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
+                    >
+                      {year}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="pie-chart px-10">
+                <h2 className="text-3xl font-bold">Pie Chart</h2>
+              </div>
+            </section>
           </>
         )}
       </main>
