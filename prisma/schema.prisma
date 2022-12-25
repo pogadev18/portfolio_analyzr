@@ -77,11 +77,11 @@ model Investment {
   etf       String
   units     String
   amount    String
+  currency  String
 
   Portfolio Portfolio @relation(fields: [portfolioId], references: [id])
   portfolioId String // this will be in the database in the Investment table
 
   User   User   @relation(fields: [userId], references: [id])
   userId String // this will be in the database in the Investment table
-
 }

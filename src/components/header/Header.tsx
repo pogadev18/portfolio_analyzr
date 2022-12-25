@@ -20,7 +20,7 @@ const Header = () => {
       {session && (
         <nav>
           <NavLink href="/">Home</NavLink>
-          <NavLink href="/create-portfolio">Create Portfolio</NavLink>
+          <NavLink href="/portfolio/create">Create Portfolio</NavLink>
         </nav>
       )}
     </header>

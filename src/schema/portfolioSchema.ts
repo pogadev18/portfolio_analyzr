@@ -1,6 +1,5 @@
 import z from 'zod';
-
-export const userIdSchema = z.object({ userId: z.string() });
+import { userIdSchema } from '@/root/schema/common';
 
 export const createPortfolioSchemaClient = z.object({
   name: z.string().min(3),
