@@ -3,10 +3,23 @@ import { useRouter } from 'next/router';
 import { GetServerSidePropsContext } from 'next';
 
 import { requireAuth } from '@/root/utils/requireAuth';
+import { trpc } from '@/root/utils/trpc';
+import { oneDayInMs } from '@/root/constants';
+import LoadingSpinner from '@/root/components/loadingSpinner';
+import { displayInvestmentYears } from '@/root/utils/displayInvestmentYears';
 
 const PortfolioPage = () => {
   const router = useRouter();
   const { id } = router.query;
+
+  const { data: investments, isLoading: loadingInvestments } = trpc.investment.getAll.useQuery(
+    { portfolioId: id as string },
+    {
+      staleTime: oneDayInMs, // 24h (keep portfolios fresh for 24h)
+    },
+  );
+
+  const investmentYears = displayInvestmentYears(investments);
 
   return (
     <>
@@ -19,12 +32,44 @@ const PortfolioPage = () => {
       <main>
         <h1>Portfolio Page: {id}</h1>
 
-        <button
-          onClick={() => router.push(`/portfolio/${id}/new-investment`)}
-          className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500"
-        >
-          add investments
-        </button>
+        {loadingInvestments ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            <button
+              onClick={() => router.push(`/portfolio/${id}/new-investment`)}
+              className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500"
+            >
+              add investments
+            </button>
+
+            <section className="flex p-10">
+              <ul className="years-list">
+                <li>
+                  <button
+                    type="button"
+                    className="w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
+                  >
+                    all
+                  </button>
+                </li>
+                {investmentYears?.map((year) => (
+                  <li key={year}>
+                    <button
+                      type="button"
+                      className="my-2 w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
+                    >
+                      {year}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="pie-chart px-10">
+                <h2 className="text-3xl font-bold">Pie Chart</h2>
+              </div>
+            </section>
+          </>
+        )}
       </main>
     </>
   );

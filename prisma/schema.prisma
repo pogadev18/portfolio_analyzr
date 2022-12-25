@@ -75,6 +75,7 @@ model Investment {
 
   date      String
   etf       String
+  alias     String?
   units     String
   amount    String
   currency  String
