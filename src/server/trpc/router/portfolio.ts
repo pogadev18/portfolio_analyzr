@@ -1,5 +1,5 @@
 import { router, protectedProcedure } from '../trpc';
-import { createPortfolioSchemaServer, userIdSchema } from '@/root/schema/portfolioSchema';
+import { createPortfolioSchemaServer } from '@/root/schema/portfolioSchema';
 
 export const portfolioRouter = router({
   getAll: protectedProcedure.query(async ({ ctx }) => {

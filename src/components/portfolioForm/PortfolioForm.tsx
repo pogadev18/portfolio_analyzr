@@ -34,7 +34,7 @@ const PortfolioForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="text-left">
-      <section className="w-1/6 p-4">
+      <section className="w-1/3 p-4">
         <div className="mb-6">
           <label htmlFor="name" className="mb-2 block text-sm font-medium ">
             Portfolio Name
