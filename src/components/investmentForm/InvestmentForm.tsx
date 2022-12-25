@@ -1,9 +1,9 @@
 import dynamic from 'next/dynamic';
-
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 
 const Select = dynamic(import('react-select'), { ssr: false });
 
@@ -17,14 +17,22 @@ import { trpc } from '@/root/utils/trpc';
 const InvestmentForm = () => {
   const router = useRouter();
   const { id } = router.query;
+  const trpcUtils = trpc.useContext();
 
-  const { mutateAsync: createInvestment, isLoading } = trpc.investment.create.useMutation();
+  const {
+    mutateAsync: createInvestment,
+    isLoading,
+    isSuccess,
+  } = trpc.investment.create.useMutation({
+    onSuccess: () => trpcUtils.investment.getAll.invalidate(),
+  });
   const { data: session } = useSession();
 
   const {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<CreateInvestment>({
     resolver: zodResolver(createInvestmentSchemaClient),
@@ -40,6 +48,13 @@ const InvestmentForm = () => {
     createInvestment(data);
   }
 
+  // reset form after mutation is successful
+  useEffect(() => {
+    if (isSuccess) {
+      reset();
+    }
+  }, [isSuccess]);
+
   if (isLoading) return <p>creating investment...</p>;
 
   return (
@@ -50,6 +65,7 @@ const InvestmentForm = () => {
             Date of investment
           </label>
           <input
+            min="2000-01-01"
             type="date"
             id="date"
             className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
@@ -68,6 +84,7 @@ const InvestmentForm = () => {
             render={({ field: { onChange, value, name, ref } }) => (
               <Select
                 id="etfs"
+                escapeClearsValue
                 inputRef={ref}
                 value={etfsSelectList.find((etf: { value: string }) => etf.value === value)}
                 name={name}
@@ -81,6 +98,19 @@ const InvestmentForm = () => {
           />
         </div>
         {errors.etf && <p className="font-bold text-red-600">{errors.etf.message}</p>}
+
+        <div className="mb-6">
+          <label htmlFor="alias" className="mb-2 block text-sm font-medium ">
+            ETF Alias
+          </label>
+          <input
+            type="text"
+            id="alias"
+            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+            {...register('alias')}
+          />
+        </div>
+        {errors.alias && <p className="font-bold text-red-600">{errors.alias.message}</p>}
 
         <div className="mb-6">
           <label htmlFor="units" className="mb-2 block text-sm font-medium">

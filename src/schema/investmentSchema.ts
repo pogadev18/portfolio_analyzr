@@ -4,6 +4,7 @@ import { userIdSchema, portfolioIdSchema } from '@/root/schema/common';
 export const createInvestmentSchemaClient = z.object({
   date: z.string(),
   etf: z.string({ required_error: 'Select an ETF' }),
+  alias: z.string().nullish(),
   units: z.string().min(1),
   amount: z.string().min(1),
   currency: z.string(),

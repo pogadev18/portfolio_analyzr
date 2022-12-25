@@ -3,9 +3,11 @@ import { type NextPage } from 'next';
 import Head from 'next/head';
 import { useSession } from 'next-auth/react';
 
-import { trpc } from '@/root/utils/trpc';
 import UserPortfolios from '@/root/components/userPortfolios';
 import LoadingSpinner from '@/root/components/loadingSpinner';
+
+import { trpc } from '@/root/utils/trpc';
+import { oneDayInMs } from '@/root/constants';
 
 const Home: NextPage = () => {
   const { data: session } = useSession();
@@ -14,7 +16,7 @@ const Home: NextPage = () => {
     undefined, // no input
     {
       enabled: !!session,
-      staleTime: 86400000, // 24h (keep portfolios fresh for 24h)
+      staleTime: oneDayInMs, // 24h (keep portfolios fresh for 24h)
     },
   );
 

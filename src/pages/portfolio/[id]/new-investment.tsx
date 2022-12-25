@@ -1,11 +1,16 @@
 import Head from 'next/head';
 import { GetServerSidePropsContext } from 'next';
+import { useRouter } from 'next/router';
 
 import InvestmentForm from '@/root/components/investmentForm';
 
 import { requireAuth } from '@/root/utils/requireAuth';
+import NavLink from '@/root/components/navLink';
 
 const NewInvestment = () => {
+  const router = useRouter();
+  const { id } = router.query;
+
   return (
     <>
       <Head>
@@ -14,6 +19,7 @@ const NewInvestment = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
+        <NavLink href={`/portfolio/${id}`}>Back to Portfolio</NavLink>
         <h1>Add Investment</h1>
         <InvestmentForm />
       </main>
