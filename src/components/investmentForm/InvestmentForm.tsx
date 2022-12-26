@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const Select = dynamic(import('react-select'), { ssr: false });
 
@@ -13,11 +13,21 @@ import type { ETFType } from '@/root/utils/etfsList';
 import { createInvestmentSchemaClient } from '@/root/schema/investmentSchema';
 import { etfsSelectList } from '@/root/utils/etfsList';
 import { trpc } from '@/root/utils/trpc';
+import { oneDayInMs } from '@/root/constants';
 
 const InvestmentForm = () => {
+  // keep track of the selected investment year
+  const [selectedInvestmentYear, setSelectedInvestmentYear] = useState<string | null>(null);
+
   const router = useRouter();
   const { id } = router.query;
   const trpcUtils = trpc.useContext();
+
+  // get all investment years
+  const { data: investmentYears } = trpc.investmentYear.getAll.useQuery(
+    { portfolioId: id as string },
+    { staleTime: oneDayInMs },
+  );
 
   const {
     mutateAsync: createInvestment,
@@ -39,10 +49,16 @@ const InvestmentForm = () => {
   });
 
   function onSubmit(values: CreateInvestment) {
+    // get the id of the investment year that the user selected
+    const investmentYearId = investmentYears?.find(
+      (year) => year.year === values.investmentYear,
+    )?.id;
+
     const data = {
       ...values,
       userId: session?.user?.id ?? '',
       portfolioId: id as string,
+      investmentYearId: investmentYearId ?? '',
     };
 
     createInvestment(data);
@@ -53,7 +69,7 @@ const InvestmentForm = () => {
     if (isSuccess) {
       reset();
     }
-  }, [isSuccess]);
+  }, [isSuccess, reset]);
 
   if (isLoading) return <p>creating investment...</p>;
 
@@ -61,11 +77,43 @@ const InvestmentForm = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <section className="w-1/3 p-4">
         <div className="mb-6">
+          <label htmlFor="investmentYear" className="mb-2 block text-sm font-medium">
+            Choose an investment year for this investment
+          </label>
+          <select
+            {...register('investmentYear')}
+            required
+            id="investmentYear"
+            onChange={(event) =>
+              // todo: improve this logic maybe?
+              setSelectedInvestmentYear(event?.target?.textContent?.replace('Choose...', '') ?? '')
+            }
+            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
+          >
+            <option value="">Choose...</option>
+            {investmentYears?.map((year) => (
+              <option value={year.year} key={year.id}>
+                {year.year}
+              </option>
+            ))}
+          </select>
+        </div>
+        {errors.investmentYear && (
+          <p className="font-bold text-red-600">{errors.investmentYear.message}</p>
+        )}
+
+        {/*
+            - based on the selected investment year from above, set the min & max for the date input
+            - also, disable the input until an investment year is selected
+        */}
+        <div className="mb-6">
           <label htmlFor="date" className="mb-2 block text-sm font-medium">
-            Date of investment
+            Date of investment (month and day)
           </label>
           <input
-            min="2000-01-01"
+            disabled={!selectedInvestmentYear}
+            min={`${selectedInvestmentYear}-01-01`}
+            max={`${selectedInvestmentYear}-12-31`}
             type="date"
             id="date"
             className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
@@ -81,19 +129,29 @@ const InvestmentForm = () => {
           </label>
           <Controller
             control={control}
-            render={({ field: { onChange, value, name, ref } }) => (
-              <Select
-                id="etfs"
-                escapeClearsValue
-                inputRef={ref}
-                value={etfsSelectList.find((etf: { value: string }) => etf.value === value)}
-                name={name}
-                options={etfsSelectList}
-                onChange={(selectedOption: ETFType) => {
-                  onChange(selectedOption.value);
-                }}
-              />
-            )}
+            render={({ field: { onChange, value, name } }) => {
+              // ugly "hack" for react-select onChange type (best solution I could find on internets)
+              const isSelectOption = (v: any): v is ETFType => {
+                if ((v as ETFType).value !== undefined) return v.value;
+                return false;
+              };
+
+              return (
+                <Select
+                  id="etfs"
+                  escapeClearsValue
+                  // inputRef={ref}
+                  value={etfsSelectList.find((etf: { value: string }) => etf.value === value)}
+                  name={name}
+                  options={etfsSelectList}
+                  onChange={(v) => {
+                    if (isSelectOption(v)) {
+                      onChange(v.value);
+                    }
+                  }}
+                />
+              );
+            }}
             name="etf"
           />
         </div>

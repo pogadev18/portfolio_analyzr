@@ -6,6 +6,7 @@ import Header from '@/root/components/header';
 
 import { trpc } from '../utils/trpc';
 
+import ErrorBoundary from '@/root/components/errorBoundary/ErrorBoundary';
 import '../styles/globals.css';
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -15,7 +16,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <Header />
-      <Component {...pageProps} />
+      <ErrorBoundary>
+        <Component {...pageProps} />
+      </ErrorBoundary>
       <ReactQueryDevtools />
     </SessionProvider>
   );
