@@ -6,12 +6,16 @@ import { requireAuth } from '@/root/utils/requireAuth';
 import { trpc } from '@/root/utils/trpc';
 import { oneDayInMs } from '@/root/constants';
 import LoadingSpinner from '@/root/components/loadingSpinner';
-import { displayInvestmentYears } from '@/root/utils/displayInvestmentYears';
 
 const PortfolioPage = () => {
   const router = useRouter();
   const { id } = router.query;
 
+  // get all investment years
+  const { data: investmentYears, isLoading: loadingInvestmentYears } =
+    trpc.investmentYear.getAll.useQuery({ portfolioId: id as string }, { staleTime: oneDayInMs });
+
+  // get all investments
   const {
     data: investments,
     isLoading: loadingInvestments,
@@ -24,6 +28,7 @@ const PortfolioPage = () => {
   );
 
   if (loadingInvestments) return <LoadingSpinner />;
+
   if (isError)
     return (
       <p>
@@ -31,8 +36,6 @@ const PortfolioPage = () => {
         exists, if not, create one here.
       </p>
     );
-
-  const investmentYears = displayInvestmentYears(investments);
 
   return (
     <>
@@ -43,36 +46,57 @@ const PortfolioPage = () => {
       </Head>
 
       <main>
-        <h1>Portfolio Page: {id}</h1>
+        <h1>Portfolio Page</h1>
+        <p>
+          Every portfolio is divided in multiple investment years and for each investment year,
+          <br /> you can add multiple investments. Therefore, before adding any investments, add an
+          investment year first.
+        </p>
+
+        <button
+          onClick={() => router.push(`/portfolio/${id}/new-investment-year`)}
+          className="my-3 mr-3 rounded bg-red-800 p-3 text-white hover:bg-red-500"
+        >
+          add investment year
+        </button>
 
         <button
           onClick={() => router.push(`/portfolio/${id}/new-investment`)}
           className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500"
         >
-          add investments
+          add investment
         </button>
 
         <section className="flex p-10">
           <ul className="years-list">
-            <li>
-              <button type="button" className="w-32 rounded bg-amber-500 p-5 hover:bg-amber-200">
-                all
-              </button>
-            </li>
-            {investmentYears?.map((year) => (
-              <li key={year}>
-                <button
-                  type="button"
-                  className="my-2 w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
-                >
-                  {year}
-                </button>
-              </li>
-            ))}
+            {investmentYears?.length ? (
+              <>
+                <li>
+                  <button
+                    type="button"
+                    className="w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
+                  >
+                    all
+                  </button>
+                </li>
+                {investmentYears?.map((year) => (
+                  <li key={year.id}>
+                    <button
+                      type="button"
+                      className="my-2 w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
+                    >
+                      {year.year}
+                    </button>
+                  </li>
+                ))}
+              </>
+            ) : null}
           </ul>
-          <div className="pie-chart px-10">
-            <h2 className="text-3xl font-bold">Pie Chart</h2>
-          </div>
+          {investmentYears?.length && (
+            <div className="pie-chart px-10">
+              <h2 className="text-3xl font-bold">Pie Chart</h2>
+            </div>
+          )}
         </section>
       </main>
     </>

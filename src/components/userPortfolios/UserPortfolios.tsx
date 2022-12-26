@@ -17,7 +17,7 @@ const UserPortfolios = ({ portfolios }: IUserPortfolios) => {
         <>
           <p>it looks like you do not have a portfolio yet</p>
           <button
-            onClick={() => router.push('/create-portfolio')}
+            onClick={() => router.push('/portfolio/create')}
             className="my-3 rounded bg-red-800 p-3 hover:bg-red-500"
           >
             create portfolio
