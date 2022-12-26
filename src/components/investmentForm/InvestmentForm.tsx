@@ -69,7 +69,7 @@ const InvestmentForm = () => {
     if (isSuccess) {
       reset();
     }
-  }, [isSuccess]);
+  }, [isSuccess, reset]);
 
   if (isLoading) return <p>creating investment...</p>;
 
@@ -104,7 +104,7 @@ const InvestmentForm = () => {
 
         {/*
             - based on the selected investment year from above, set the min & max for the date input
-            - also, disable the input until an investment year was selected
+            - also, disable the input until an investment year is selected
         */}
         <div className="mb-6">
           <label htmlFor="date" className="mb-2 block text-sm font-medium">
@@ -129,20 +129,29 @@ const InvestmentForm = () => {
           </label>
           <Controller
             control={control}
-            render={({ field: { onChange, value, name, ref } }) => (
-              <Select
-                id="etfs"
-                escapeClearsValue
-                inputRef={ref}
-                value={etfsSelectList.find((etf: { value: string }) => etf.value === value)}
-                name={name}
-                options={etfsSelectList}
-                // TODO: fix this warning
-                onChange={(selectedOption: ETFType) => {
-                  onChange(selectedOption.value);
-                }}
-              />
-            )}
+            render={({ field: { onChange, value, name } }) => {
+              // ugly "hack" for react-select onChange type (best solution I could find on internets)
+              const isSelectOption = (v: any): v is ETFType => {
+                if ((v as ETFType).value !== undefined) return v.value;
+                return false;
+              };
+
+              return (
+                <Select
+                  id="etfs"
+                  escapeClearsValue
+                  // inputRef={ref}
+                  value={etfsSelectList.find((etf: { value: string }) => etf.value === value)}
+                  name={name}
+                  options={etfsSelectList}
+                  onChange={(v) => {
+                    if (isSelectOption(v)) {
+                      onChange(v.value);
+                    }
+                  }}
+                />
+              );
+            }}
             name="etf"
           />
         </div>
