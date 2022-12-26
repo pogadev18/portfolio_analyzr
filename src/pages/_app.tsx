@@ -15,8 +15,8 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <Header />
       <ErrorBoundary>
+        <Header />
         <Component {...pageProps} />
       </ErrorBoundary>
       <ReactQueryDevtools />
