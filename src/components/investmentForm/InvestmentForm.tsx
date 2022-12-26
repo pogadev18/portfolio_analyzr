@@ -49,10 +49,16 @@ const InvestmentForm = () => {
   });
 
   function onSubmit(values: CreateInvestment) {
+    // get the id of the investment year that the user selected
+    const investmentYearId = investmentYears?.find(
+      (year) => year.year === values.investmentYear,
+    )?.id;
+
     const data = {
       ...values,
       userId: session?.user?.id ?? '',
       portfolioId: id as string,
+      investmentYearId: investmentYearId ?? '',
     };
 
     createInvestment(data);
@@ -66,8 +72,6 @@ const InvestmentForm = () => {
   }, [isSuccess]);
 
   if (isLoading) return <p>creating investment...</p>;
-
-  console.log(selectedInvestmentYear);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -88,7 +92,7 @@ const InvestmentForm = () => {
           >
             <option value="">Choose...</option>
             {investmentYears?.map((year) => (
-              <option value={year.id} key={year.id}>
+              <option value={year.year} key={year.id}>
                 {year.year}
               </option>
             ))}
@@ -104,12 +108,12 @@ const InvestmentForm = () => {
         */}
         <div className="mb-6">
           <label htmlFor="date" className="mb-2 block text-sm font-medium">
-            Date of investment
+            Date of investment (month and day)
           </label>
           <input
             disabled={!selectedInvestmentYear}
             min={`${selectedInvestmentYear}-01-01`}
-            max={`${selectedInvestmentYear}-31-12`}
+            max={`${selectedInvestmentYear}-12-31`}
             type="date"
             id="date"
             className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"

@@ -2,10 +2,12 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { GetServerSidePropsContext } from 'next';
 
+import LoadingSpinner from '@/root/components/loadingSpinner';
+import InvestmentsPieCharts from '@/root/components/investmentsPieCharts';
+
 import { requireAuth } from '@/root/utils/requireAuth';
 import { trpc } from '@/root/utils/trpc';
 import { oneDayInMs } from '@/root/constants';
-import LoadingSpinner from '@/root/components/loadingSpinner';
 
 const PortfolioPage = () => {
   const router = useRouter();
@@ -16,26 +18,15 @@ const PortfolioPage = () => {
     trpc.investmentYear.getAll.useQuery({ portfolioId: id as string }, { staleTime: oneDayInMs });
 
   // get all investments
-  const {
-    data: investments,
-    isLoading: loadingInvestments,
-    isError,
-  } = trpc.investment.getAll.useQuery(
+  const { data: investments } = trpc.investment.getAll.useQuery(
     { portfolioId: id as string },
     {
       staleTime: oneDayInMs, // 24h (keep portfolios fresh for 24h)
+      useErrorBoundary: true,
     },
   );
 
-  if (loadingInvestments) return <LoadingSpinner />;
-
-  if (isError)
-    return (
-      <p>
-        something went wrong while trying to get data from this portfolio. Make sure this portfolio
-        exists, if not, create one here.
-      </p>
-    );
+  if (loadingInvestmentYears) return <LoadingSpinner />;
 
   return (
     <>
@@ -49,8 +40,10 @@ const PortfolioPage = () => {
         <h1>Portfolio Page</h1>
         <p>
           Every portfolio is divided in multiple investment years and for each investment year,
-          <br /> you can add multiple investments. Therefore, before adding any investments, add an
-          investment year first.
+          <br /> you can add multiple investments.{' '}
+          {investmentYears?.length === 0 && (
+            <span>Therefore, before adding any investments, add an investment year first.</span>
+          )}
         </p>
 
         <button
@@ -61,43 +54,14 @@ const PortfolioPage = () => {
         </button>
 
         <button
+          disabled={investmentYears?.length === 0}
           onClick={() => router.push(`/portfolio/${id}/new-investment`)}
-          className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500"
+          className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500 disabled:bg-gray-300"
         >
           add investment
         </button>
 
-        <section className="flex p-10">
-          <ul className="years-list">
-            {investmentYears?.length ? (
-              <>
-                <li>
-                  <button
-                    type="button"
-                    className="w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
-                  >
-                    all
-                  </button>
-                </li>
-                {investmentYears?.map((year) => (
-                  <li key={year.id}>
-                    <button
-                      type="button"
-                      className="my-2 w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
-                    >
-                      {year.year}
-                    </button>
-                  </li>
-                ))}
-              </>
-            ) : null}
-          </ul>
-          {investmentYears?.length && (
-            <div className="pie-chart px-10">
-              <h2 className="text-3xl font-bold">Pie Chart</h2>
-            </div>
-          )}
-        </section>
+        <InvestmentsPieCharts investmentYears={investmentYears} />
       </main>
     </>
   );

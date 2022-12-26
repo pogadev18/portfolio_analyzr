@@ -99,6 +99,7 @@ model Investment {
   units    String
   amount   String
   currency String
+  investmentYear String
 
   User   User   @relation(fields: [userId], references: [id])
   userId String // this will be in the database in the Investment table

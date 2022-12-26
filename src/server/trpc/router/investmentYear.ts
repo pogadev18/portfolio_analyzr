@@ -25,6 +25,19 @@ export const investmentYearRouter = router({
   create: protectedProcedure
     .input(createInvestmentYearSchemaServer)
     .mutation(async ({ ctx, input }) => {
+      const investmentYearAlreadyExists = await ctx.prisma.investmentYear.findFirst({
+        where: { year: input.year },
+      });
+
+      if (investmentYearAlreadyExists) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message:
+            'It looks like you already have this investment year created. Try adding another year',
+          cause: 'investmentYear already exists',
+        });
+      }
+
       return ctx.prisma.investmentYear.create({ data: { ...input } });
     }),
 });
