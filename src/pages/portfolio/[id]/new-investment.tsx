@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { GetServerSidePropsContext } from 'next';
+import type { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 
 import InvestmentForm from '@/root/components/investmentForm';

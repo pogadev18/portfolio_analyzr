@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../trpc';
 
 import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
-import { portfolioIdSchema, userIdSchema } from '@/root/schema/common';
+import { portfolioIdSchema } from '@/root/schema/common';
 
 export const investmentYearRouter = router({
   getAll: protectedProcedure.input(portfolioIdSchema).query(async ({ ctx, input }) => {

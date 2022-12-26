@@ -2,7 +2,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSession } from 'next-auth/react';
 
-import { createPortfolioSchemaClient, CreatePortfolio } from '@/root/schema/portfolioSchema';
+import type { CreatePortfolio } from '@/root/schema/portfolioSchema';
+import { createPortfolioSchemaClient } from '@/root/schema/portfolioSchema';
 import { trpc } from '@/root/utils/trpc';
 
 const PortfolioForm = () => {

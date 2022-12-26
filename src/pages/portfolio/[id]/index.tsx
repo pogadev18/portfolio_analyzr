@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { GetServerSidePropsContext } from 'next';
+import type { GetServerSidePropsContext } from 'next';
 
 import LoadingSpinner from '@/root/components/loadingSpinner';
 import InvestmentsPieCharts from '@/root/components/investmentsPieCharts';
@@ -16,15 +16,6 @@ const PortfolioPage = () => {
   // get all investment years
   const { data: investmentYears, isLoading: loadingInvestmentYears } =
     trpc.investmentYear.getAll.useQuery({ portfolioId: id as string }, { staleTime: oneDayInMs });
-
-  // get all investments
-  const { data: investments } = trpc.investment.getAll.useQuery(
-    { portfolioId: id as string },
-    {
-      staleTime: oneDayInMs, // 24h (keep portfolios fresh for 24h)
-      useErrorBoundary: true,
-    },
-  );
 
   if (loadingInvestmentYears) return <LoadingSpinner />;
 

@@ -6,7 +6,7 @@ import { portfolioIdSchema } from '@/root/schema/common';
 
 export const investmentRouter = router({
   getAll: protectedProcedure.input(portfolioIdSchema).query(async ({ ctx, input }) => {
-    const { session, prisma } = ctx;
+    const { session } = ctx;
     const { portfolioId } = input;
 
     const portfolio = await ctx.prisma.portfolio.findFirst({ where: { id: portfolioId } });

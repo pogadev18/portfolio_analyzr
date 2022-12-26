@@ -21,8 +21,6 @@ const InvestmentYearForm = () => {
     mutateAsync: createInvestmentYear,
     isLoading,
     isSuccess,
-    isError,
-    failureReason,
   } = trpc.investmentYear.create.useMutation({
     useErrorBoundary: true,
     onSuccess: () => trpcUtils.investmentYear.getAll.invalidate(),
@@ -52,7 +50,7 @@ const InvestmentYearForm = () => {
     if (isSuccess) {
       reset();
     }
-  }, [isSuccess]);
+  }, [isSuccess, reset]);
 
   if (isLoading) return <p>creating investment year...</p>;
 

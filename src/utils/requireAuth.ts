@@ -1,6 +1,6 @@
 import { getSession } from 'next-auth/react';
-import { GetServerSidePropsContext } from 'next';
-import { Session } from 'next-auth';
+import type { GetServerSidePropsContext } from 'next';
+import type { Session } from 'next-auth';
 export const requireAuth = async (
   context: GetServerSidePropsContext,
   cb: ({ session }: { session: Session }) => { props: { session: Session } },
