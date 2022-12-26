@@ -1,11 +1,28 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+import React from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
 }
 
+interface ErrorData {
+  httpCode: number;
+  message: string;
+}
+
 interface State {
   hasError: boolean;
+  errorData?: ErrorData | null;
+}
+
+interface CustomError<T> {
+  Error: T;
+  data: {
+    httpStatus: number;
+  };
+  shape: {
+    message: string;
+  };
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
@@ -15,30 +32,31 @@ class ErrorBoundary extends React.Component<Props, State> {
     // Define a state variable to track whether is an error or not
     this.state = { hasError: false };
   }
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(error: CustomError<Error>) {
     // Update state so the next render will show the fallback UI
 
-    return { hasError: true };
+    return {
+      hasError: true,
+      errorData: { httpCode: error.data.httpStatus, message: error.shape.message },
+    };
   }
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // You can use your own error logging service here
     console.log({ error, errorInfo });
   }
+
   render() {
-    // Check if the error is thrown
     if (this.state.hasError) {
-      // You can render any custom fallback UI
       return (
         <div>
           <h2>Oops, there is an error!</h2>
+          <p>{this.state.errorData?.message}</p>
           <button type="button" onClick={() => this.setState({ hasError: false })}>
             Try again?
           </button>
         </div>
       );
     }
-
-    // Return children components in case of no error
 
     return this.props.children;
   }
