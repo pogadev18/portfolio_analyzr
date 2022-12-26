@@ -15,7 +15,10 @@ const PortfolioPage = () => {
 
   // get all investment years
   const { data: investmentYears, isLoading: loadingInvestmentYears } =
-    trpc.investmentYear.getAll.useQuery({ portfolioId: id as string }, { staleTime: oneDayInMs });
+    trpc.investmentYear.getAll.useQuery(
+      { portfolioId: id as string },
+      { staleTime: oneDayInMs, useErrorBoundary: true },
+    );
 
   if (loadingInvestmentYears) return <LoadingSpinner />;
 
