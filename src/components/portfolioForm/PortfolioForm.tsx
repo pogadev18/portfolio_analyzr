@@ -30,7 +30,7 @@ const PortfolioForm = () => {
     createPortfolio(data);
   }
 
-  if (isLoading) return 'creating portfolio...';
+  if (isLoading) return <p>creating portfolio...</p>;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="text-left">
