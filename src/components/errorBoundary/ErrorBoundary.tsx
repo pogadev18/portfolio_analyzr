@@ -1,4 +1,5 @@
 import React from 'react';
+
 import type { ErrorInfo, ReactNode } from 'react';
 
 interface Props {
@@ -45,13 +46,18 @@ class ErrorBoundary extends React.Component<Props, State> {
     console.log({ error, errorInfo });
   }
 
+  handleClick = async () => {
+    this.setState({ hasError: false });
+    window.location.href = '/';
+  };
+
   render() {
     if (this.state.hasError) {
       return (
         <div>
           <h2>Oops, there is an error!</h2>
           <p>{this.state.errorData?.message}</p>
-          <button type="button" onClick={() => this.setState({ hasError: false })}>
+          <button type="button" onClick={this.handleClick}>
             Try again?
           </button>
         </div>
