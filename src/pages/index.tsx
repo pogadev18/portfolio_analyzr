@@ -7,7 +7,6 @@ import UserPortfolios from '@/root/components/userPortfolios';
 import LoadingSpinner from '@/root/components/loadingSpinner';
 
 import { trpc } from '@/root/utils/trpc';
-import { oneDayInMs } from '@/root/constants';
 
 const Home: NextPage = () => {
   const { data: session } = useSession();
@@ -16,7 +15,6 @@ const Home: NextPage = () => {
     undefined, // no input
     {
       enabled: !!session,
-      staleTime: oneDayInMs, // 24h (keep portfolios fresh for 24h)
     },
   );
 
