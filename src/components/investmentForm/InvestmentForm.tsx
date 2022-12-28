@@ -13,7 +13,6 @@ import type { ETFType } from '@/root/utils/etfsList';
 import { createInvestmentSchemaClient } from '@/root/schema/investmentSchema';
 import { etfsSelectList } from '@/root/utils/etfsList';
 import { trpc } from '@/root/utils/trpc';
-import { oneDayInMs } from '@/root/constants';
 
 const InvestmentForm = () => {
   // keep track of the selected investment year
@@ -24,10 +23,9 @@ const InvestmentForm = () => {
   const trpcUtils = trpc.useContext();
 
   // get all investment years
-  const { data: investmentYears } = trpc.investmentYear.getAll.useQuery(
-    { portfolioId: id as string },
-    { staleTime: oneDayInMs },
-  );
+  const { data: investmentYears } = trpc.investmentYear.getAll.useQuery({
+    portfolioId: id as string,
+  });
 
   const {
     mutateAsync: createInvestment,

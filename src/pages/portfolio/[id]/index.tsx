@@ -7,7 +7,6 @@ import InvestmentsPieCharts from '@/root/components/investmentsPieCharts';
 
 import { requireAuth } from '@/root/utils/requireAuth';
 import { trpc } from '@/root/utils/trpc';
-import { oneDayInMs } from '@/root/constants';
 
 const PortfolioPage = () => {
   const router = useRouter();
@@ -15,10 +14,7 @@ const PortfolioPage = () => {
 
   // get all investment years
   const { data: investmentYears, isLoading: loadingInvestmentYears } =
-    trpc.investmentYear.getAll.useQuery(
-      { portfolioId: id as string },
-      { staleTime: oneDayInMs, useErrorBoundary: true },
-    );
+    trpc.investmentYear.getAll.useQuery({ portfolioId: id as string });
 
   if (loadingInvestmentYears) return <LoadingSpinner />;
 
