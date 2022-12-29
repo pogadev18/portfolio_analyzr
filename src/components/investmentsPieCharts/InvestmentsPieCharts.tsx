@@ -1,8 +1,25 @@
+import { Chart } from 'react-google-charts';
+
 import type { InvestmentYear } from '.prisma/client';
 
 interface IInvestmentsPieChartsProps {
   investmentYears: InvestmentYear[] | undefined;
 }
+
+const data = [
+  ['Task', 'Hours per Day'],
+  ['Work', 484.23],
+  ['Eat', 423],
+  ['Commute', 1937],
+  ['Watch TV', 675],
+  ['Sleep', 876],
+  ['Drink', 1322.32],
+];
+
+const options = {
+  title: 'My Daily Activities',
+  is3D: true,
+};
 
 const InvestmentsPieCharts = ({ investmentYears }: IInvestmentsPieChartsProps) => {
   return (
@@ -29,8 +46,9 @@ const InvestmentsPieCharts = ({ investmentYears }: IInvestmentsPieChartsProps) =
         ) : null}
       </ul>
       {investmentYears?.length ? (
-        <div className="pie-chart px-10">
+        <div className="pie-chart flex-1 px-10">
           <h2 className="text-3xl font-bold">Pie Chart</h2>
+          <Chart chartType="PieChart" data={data} options={options} width="100%" height="800px" />
         </div>
       ) : null}
     </section>
