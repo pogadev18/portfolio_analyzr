@@ -11,4 +11,6 @@ export const createInvestmentYearSchemaServer = createInvestmentYearSchemaClient
   .merge(userIdSchema)
   .merge(portfolioIdSchema);
 
+export const getByYearSchema = z.object({ year: z.string() });
+
 export type CreateInvestmentYear = z.infer<typeof createInvestmentYearSchemaClient>;

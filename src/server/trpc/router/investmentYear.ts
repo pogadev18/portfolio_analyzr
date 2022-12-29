@@ -1,7 +1,10 @@
 import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../trpc';
 
-import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
+import {
+  createInvestmentYearSchemaServer,
+  getByYearSchema,
+} from '@/root/schema/investmentYearSchema';
 import { portfolioIdSchema } from '@/root/schema/common';
 
 export const investmentYearRouter = router({
@@ -21,6 +24,20 @@ export const investmentYearRouter = router({
     return await ctx.prisma.investmentYear.findMany({
       where: { portfolioId, userId: session.user.id },
     });
+  }),
+  getByYear: protectedProcedure.input(getByYearSchema).query(async ({ ctx, input }) => {
+    const investmentYear = await ctx.prisma.investmentYear.findFirst({
+      where: { year: input.year },
+    });
+
+    if (!investmentYear) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Year ${input.year} could not be found! Try again with another year!`,
+      });
+    }
+
+    return investmentYear;
   }),
   create: protectedProcedure
     .input(createInvestmentYearSchemaServer)
