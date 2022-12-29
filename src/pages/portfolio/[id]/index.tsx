@@ -16,7 +16,12 @@ const PortfolioPage = () => {
   const { data: investmentYears, isLoading: loadingInvestmentYears } =
     trpc.investmentYear.getAll.useQuery({ portfolioId: id as string });
 
-  if (loadingInvestmentYears) return <LoadingSpinner />;
+  // get all investments
+  const { data: investments, isLoading: loadingInvestments } = trpc.investment.getAll.useQuery({
+    portfolioId: id as string,
+  });
+
+  if (loadingInvestmentYears || loadingInvestments) return <LoadingSpinner />;
 
   return (
     <>
@@ -51,7 +56,7 @@ const PortfolioPage = () => {
           add investment
         </button>
 
-        <InvestmentsPieCharts investmentYears={investmentYears} />
+        <InvestmentsPieCharts investmentYears={investmentYears} investments={investments} />
       </main>
     </>
   );

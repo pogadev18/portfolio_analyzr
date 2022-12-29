@@ -66,6 +66,7 @@ const InvestmentForm = () => {
   useEffect(() => {
     if (isSuccess) {
       reset();
+      setSelectedInvestmentYear(null);
     }
   }, [isSuccess, reset]);
 
