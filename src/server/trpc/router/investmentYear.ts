@@ -1,11 +1,8 @@
 import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../trpc';
 
-import {
-  createInvestmentYearSchemaServer,
-  getByYearSchema,
-} from '@/root/schema/investmentYearSchema';
-import { portfolioIdSchema } from '@/root/schema/common';
+import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
+import { portfolioIdSchema, getInvestmentsByYearSchema } from '@/root/schema/common';
 
 export const investmentYearRouter = router({
   getAll: protectedProcedure.input(portfolioIdSchema).query(async ({ ctx, input }) => {
@@ -25,9 +22,14 @@ export const investmentYearRouter = router({
       where: { portfolioId, userId: session.user.id },
     });
   }),
-  getByYear: protectedProcedure.input(getByYearSchema).query(async ({ ctx, input }) => {
+  getByYear: protectedProcedure.input(getInvestmentsByYearSchema).query(async ({ ctx, input }) => {
+    const {
+      session: { user },
+    } = ctx;
+    const { portfolioId, year } = input;
+
     const investmentYear = await ctx.prisma.investmentYear.findFirst({
-      where: { year: input.year },
+      where: { userId: user.id, year, portfolioId },
     });
 
     if (!investmentYear) {
@@ -37,7 +39,16 @@ export const investmentYearRouter = router({
       });
     }
 
-    return investmentYear;
+    // grab all the investments that are related to the year that was found
+    const investmentsInThatYear = await ctx.prisma.investment.findMany({
+      where: {
+        userId: user.id,
+        investmentYear: input.year,
+        portfolioId,
+      },
+    });
+
+    return { investmentYearInfo: investmentYear, investmentsInThatYear };
   }),
   create: protectedProcedure
     .input(createInvestmentYearSchemaServer)

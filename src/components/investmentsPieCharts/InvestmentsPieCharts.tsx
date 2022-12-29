@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Chart } from 'react-google-charts';
 import type { InvestmentYear, Investment } from '.prisma/client';
 
-import { etfsPieChartData } from '@/root/utils/gooleChartsDataFormat';
+import { formatEtfsPieChartData } from '@/root/utils/gooleChartsDataFormat';
 import { etfsPieChartOptions, currentYear } from '@/root/constants';
 import { trpc } from '@/root/utils/trpc';
 import LoadingSpinner from '@/root/components/loadingSpinner';
@@ -17,16 +17,22 @@ import LoadingSpinner from '@/root/components/loadingSpinner';
 
 interface IInvestmentsPieChartsProps {
   investmentYears: InvestmentYear[] | undefined;
-  investments: Investment[] | undefined;
+  // investments: Investment[] | undefined;
+  portfolioId: string;
 }
 
-const InvestmentsPieCharts = ({ investmentYears, investments }: IInvestmentsPieChartsProps) => {
-  const etfsData = etfsPieChartData(investments);
+const InvestmentsPieCharts = ({
+  investmentYears,
+  // investments,
+  portfolioId,
+}: IInvestmentsPieChartsProps) => {
   const [investmentYearToFetch, setInvestmentYearToFetch] = useState<string>(String(currentYear));
 
   // the selected year by default is the current year
-  const { data: investmentYearInfo, isLoading: loadingInvestmentYear } =
-    trpc.investmentYear.getByYear.useQuery({ year: investmentYearToFetch });
+  const { data: investmentsData, isLoading: loadingInvestmentYear } =
+    trpc.investmentYear.getByYear.useQuery({ year: investmentYearToFetch, portfolioId });
+
+  console.log('AAAAA', investmentsData);
 
   return (
     <section className="flex p-10">
@@ -59,14 +65,15 @@ const InvestmentsPieCharts = ({ investmentYears, investments }: IInvestmentsPieC
           ) : (
             <>
               <h2 className="text-3xl font-bold">
-                Total sum to invest in {investmentYearInfo?.year}:{' '}
+                Total sum to invest in {investmentsData?.investmentYearInfo?.year}:{' '}
                 <span>
-                  {investmentYearInfo?.sumToInvest} {investmentYearInfo?.currency}
+                  {investmentsData?.investmentYearInfo?.sumToInvest}{' '}
+                  {investmentsData?.investmentYearInfo?.currency}
                 </span>
               </h2>
               <Chart
                 chartType="PieChart"
-                data={etfsData}
+                data={formatEtfsPieChartData(investmentsData?.investmentsInThatYear)}
                 options={etfsPieChartOptions}
                 width="100%"
                 height="800px"

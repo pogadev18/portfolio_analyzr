@@ -56,7 +56,11 @@ const PortfolioPage = () => {
           add investment
         </button>
 
-        <InvestmentsPieCharts investmentYears={investmentYears} investments={investments} />
+        <InvestmentsPieCharts
+          investmentYears={investmentYears}
+          // investments={investments}
+          portfolioId={id as string}
+        />
       </main>
     </>
   );
