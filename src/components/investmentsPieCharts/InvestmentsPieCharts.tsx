@@ -1,17 +1,13 @@
 import { Chart } from 'react-google-charts';
-
 import type { InvestmentYear, Investment } from '.prisma/client';
+
 import { etfsPieChartData } from '@/root/utils/gooleChartsDataFormat';
+import { etfsPieChartOptions } from '@/root/constants';
 
 interface IInvestmentsPieChartsProps {
   investmentYears: InvestmentYear[] | undefined;
   investments: Investment[] | undefined;
 }
-
-const options = {
-  title: 'My ETFs',
-  is3D: true,
-};
 
 const InvestmentsPieCharts = ({ investmentYears, investments }: IInvestmentsPieChartsProps) => {
   const etfsData = etfsPieChartData(investments);
@@ -45,7 +41,7 @@ const InvestmentsPieCharts = ({ investmentYears, investments }: IInvestmentsPieC
           <Chart
             chartType="PieChart"
             data={etfsData}
-            options={options}
+            options={etfsPieChartOptions}
             width="100%"
             height="800px"
           />
