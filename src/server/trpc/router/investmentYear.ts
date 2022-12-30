@@ -72,7 +72,7 @@ export const investmentYearRouter = router({
     .input(createInvestmentYearSchemaServer)
     .mutation(async ({ ctx, input }) => {
       const investmentYearAlreadyExists = await ctx.prisma.investmentYear.findFirst({
-        where: { year: input.year },
+        where: { year: input.year, userId: ctx.session.user.id },
       });
 
       if (investmentYearAlreadyExists) {

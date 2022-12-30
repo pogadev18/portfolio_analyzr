@@ -29,6 +29,8 @@ export const investmentRouter = router({
   create: protectedProcedure
     .input(createInvestmentSchemaServer)
     .mutation(async ({ ctx, input }) => {
+      // TODO: check if investment ticker already exists, and if exists, throw an error
+
       return ctx.prisma.investment.create({
         data: { ...input },
       });
