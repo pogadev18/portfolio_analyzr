@@ -16,12 +16,7 @@ const PortfolioPage = () => {
   const { data: investmentYears, isLoading: loadingInvestmentYears } =
     trpc.investmentYear.getAll.useQuery({ portfolioId: id as string });
 
-  // get all investments
-  const { data: investments, isLoading: loadingInvestments } = trpc.investment.getAll.useQuery({
-    portfolioId: id as string,
-  });
-
-  if (loadingInvestmentYears || loadingInvestments) return <LoadingSpinner />;
+  if (loadingInvestmentYears) return <LoadingSpinner />;
 
   return (
     <>
@@ -35,7 +30,7 @@ const PortfolioPage = () => {
         <h1>Portfolio Page</h1>
         <p>
           Every portfolio is divided in multiple investment years and for each investment year,
-          <br /> you can add multiple investments.{' '}
+          <br /> you can add multiple investments.
           {investmentYears?.length === 0 && (
             <span>Therefore, before adding any investments, add an investment year first.</span>
           )}
@@ -56,11 +51,7 @@ const PortfolioPage = () => {
           add investment
         </button>
 
-        <InvestmentsPieCharts
-          investmentYears={investmentYears}
-          // investments={investments}
-          portfolioId={id as string}
-        />
+        <InvestmentsPieCharts investmentYears={investmentYears} portfolioId={id as string} />
       </main>
     </>
   );

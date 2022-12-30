@@ -32,7 +32,10 @@ const InvestmentForm = () => {
     isLoading,
     isSuccess,
   } = trpc.investment.create.useMutation({
-    onSuccess: () => trpcUtils.investment.getAll.invalidate(),
+    onSuccess: async () => {
+      await trpcUtils.investment.getAll.invalidate();
+      await trpcUtils.investmentYear.getByYear.invalidate();
+    },
   });
   const { data: session } = useSession();
 
@@ -72,6 +75,8 @@ const InvestmentForm = () => {
 
   if (isLoading) return <p>creating investment...</p>;
 
+  console.log('aaa', selectedInvestmentYear);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <section className="w-1/3 p-4">
@@ -85,7 +90,7 @@ const InvestmentForm = () => {
             id="investmentYear"
             onChange={(event) =>
               // todo: improve this logic maybe?
-              setSelectedInvestmentYear(event?.target?.textContent?.replace('Choose...', '') ?? '')
+              setSelectedInvestmentYear(event?.currentTarget?.value?.replace('Choose...', '') ?? '')
             }
             className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           >

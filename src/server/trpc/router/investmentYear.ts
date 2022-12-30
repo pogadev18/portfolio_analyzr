@@ -28,6 +28,24 @@ export const investmentYearRouter = router({
     } = ctx;
     const { portfolioId, year } = input;
 
+    /*
+      two possible cases in this situation
+      =====================================
+      1. user selects 'all'
+      2. user selects a specific investment year
+     */
+
+    if (year === 'all') {
+      const investments = await ctx.prisma.investment.findMany({
+        where: {
+          userId: user.id,
+          portfolioId,
+        },
+      });
+
+      return { investmentYearInfo: null, investmentsInThatYear: investments };
+    }
+
     const investmentYear = await ctx.prisma.investmentYear.findFirst({
       where: { userId: user.id, year, portfolioId },
     });
