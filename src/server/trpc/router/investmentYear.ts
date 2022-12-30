@@ -3,6 +3,7 @@ import { router, protectedProcedure } from '../trpc';
 
 import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
 import { portfolioIdSchema, getInvestmentsByYearSchema } from '@/root/schema/common';
+import { checkDuplicatedETFs } from '@/root/utils/checkDuplicatedEtfs';
 
 export const investmentYearRouter = router({
   getAll: protectedProcedure.input(portfolioIdSchema).query(async ({ ctx, input }) => {
@@ -42,6 +43,13 @@ export const investmentYearRouter = router({
           portfolioId,
         },
       });
+
+      // find all etfs duplicates
+      const etfTickers = investments.map((i) => i.etf);
+      const hasDuplicates = checkDuplicatedETFs(etfTickers);
+      // const duplicates = investments.length === new Set(investments).size;
+
+      console.log('hasDuplicates!!!!', hasDuplicates);
 
       return { investmentYearInfo: null, investmentsInThatYear: investments };
     }
