@@ -75,8 +75,6 @@ const InvestmentForm = () => {
 
   if (isLoading) return <p>creating investment...</p>;
 
-  console.log('aaa', selectedInvestmentYear);
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <section className="w-1/3 p-4">

@@ -8,14 +8,6 @@ import { etfsPieChartOptions, currentYear } from '@/root/constants';
 import { trpc } from '@/root/utils/trpc';
 import LoadingSpinner from '@/root/components/loadingSpinner';
 
-// create a procedure that will query the investments table based on the year that I'm sending from the client
-
-/*
-  0. default is the current year
-  1. when click on button, set the year in a state
-  2. every time the year state changes, make a DB query and grab the investments for that year
- */
-
 interface IInvestmentsPieChartsProps {
   investmentYears: InvestmentYear[] | undefined;
   portfolioId: string;
@@ -28,8 +20,6 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
   // the selected year by default is the current year
   const { data: investmentsData, isLoading: loadingInvestmentYear } =
     trpc.investmentYear.getByYear.useQuery({ year: investmentYearToFetch, portfolioId });
-
-  console.log('investmentsData', investmentsData);
 
   return (
     <section className="flex p-10">
