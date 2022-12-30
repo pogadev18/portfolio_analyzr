@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Chart } from 'react-google-charts';
-import type { InvestmentYear, Investment } from '.prisma/client';
+import type { InvestmentYear } from '.prisma/client';
 import { useRouter } from 'next/router';
 
 import { formatEtfsPieChartData } from '@/root/utils/gooleChartsDataFormat';
 import { etfsPieChartOptions, currentYear } from '@/root/constants';
 import { trpc } from '@/root/utils/trpc';
 import LoadingSpinner from '@/root/components/loadingSpinner';
-import { event } from 'next/dist/build/output/log';
 
 // create a procedure that will query the investments table based on the year that I'm sending from the client
 
