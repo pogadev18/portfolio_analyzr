@@ -1,16 +1,25 @@
+import { useState } from 'react';
 import { Chart } from 'react-google-charts';
-import type { InvestmentYear, Investment } from '.prisma/client';
+import type { InvestmentYear } from '.prisma/client';
+import { useRouter } from 'next/router';
 
-import { etfsPieChartData } from '@/root/utils/gooleChartsDataFormat';
-import { etfsPieChartOptions } from '@/root/constants';
+import { formatEtfsPieChartData } from '@/root/utils/gooleChartsDataFormat';
+import { etfsPieChartOptions, currentYear } from '@/root/constants';
+import { trpc } from '@/root/utils/trpc';
+import LoadingSpinner from '@/root/components/loadingSpinner';
 
 interface IInvestmentsPieChartsProps {
   investmentYears: InvestmentYear[] | undefined;
-  investments: Investment[] | undefined;
+  portfolioId: string;
 }
 
-const InvestmentsPieCharts = ({ investmentYears, investments }: IInvestmentsPieChartsProps) => {
-  const etfsData = etfsPieChartData(investments);
+const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieChartsProps) => {
+  const router = useRouter();
+  const [investmentYearToFetch, setInvestmentYearToFetch] = useState<string>(String(currentYear));
+
+  // the selected year by default is the current year
+  const { data: investmentsData, isLoading: loadingInvestmentYear } =
+    trpc.investmentYear.getByYear.useQuery({ year: investmentYearToFetch, portfolioId });
 
   return (
     <section className="flex p-10">
@@ -18,17 +27,26 @@ const InvestmentsPieCharts = ({ investmentYears, investments }: IInvestmentsPieC
         {investmentYears?.length ? (
           <>
             <li>
-              <button type="button" className="w-32 rounded bg-amber-500 p-5 hover:bg-amber-200">
+              <button
+                onClick={() => setInvestmentYearToFetch('all')}
+                type="button"
+                className={`my-2 w-32 rounded ${
+                  investmentYearToFetch === 'all' ? 'bg-amber-300' : 'bg-amber-500'
+                }  p-5 hover:bg-amber-200`}
+              >
                 all
               </button>
             </li>
-            {investmentYears?.map((year) => (
-              <li key={year.id}>
+            {investmentYears?.map(({ year, id }) => (
+              <li key={id}>
                 <button
+                  onClick={(event) => setInvestmentYearToFetch(event.currentTarget.textContent!)}
                   type="button"
-                  className="my-2 w-32 rounded bg-amber-500 p-5 hover:bg-amber-200"
+                  className={`my-2 w-32 rounded ${
+                    year === investmentYearToFetch ? 'bg-amber-300' : 'bg-amber-500'
+                  }  p-5 hover:bg-amber-200`}
                 >
-                  {year.year}
+                  {year}
                 </button>
               </li>
             ))}
@@ -37,14 +55,39 @@ const InvestmentsPieCharts = ({ investmentYears, investments }: IInvestmentsPieC
       </ul>
       {investmentYears?.length ? (
         <div className="pie-chart flex-1 px-10">
-          <h2 className="text-3xl font-bold">Pie Chart</h2>
-          <Chart
-            chartType="PieChart"
-            data={etfsData}
-            options={etfsPieChartOptions}
-            width="100%"
-            height="800px"
-          />
+          {loadingInvestmentYear ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <h2 className="text-3xl font-bold">
+                Total sum to invest in {investmentsData?.investmentYearInfo?.year}:{' '}
+                <span>
+                  {investmentsData?.investmentYearInfo?.sumToInvest}&nbsp;
+                  {investmentsData?.investmentYearInfo?.currency}
+                </span>
+              </h2>
+              {investmentsData?.investmentsInThatYear?.length === 0 ? (
+                <>
+                  <p>no investments for this year</p>
+                  <button
+                    disabled={investmentYears?.length === 0}
+                    onClick={() => router.push(`/portfolio/${portfolioId}/new-investment`)}
+                    className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500 disabled:bg-gray-300"
+                  >
+                    add investment
+                  </button>
+                </>
+              ) : (
+                <Chart
+                  chartType="PieChart"
+                  data={formatEtfsPieChartData(investmentsData?.investmentsInThatYear)}
+                  options={etfsPieChartOptions}
+                  width="100%"
+                  height="800px"
+                />
+              )}
+            </>
+          )}
         </div>
       ) : null}
     </section>

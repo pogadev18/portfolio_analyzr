@@ -2,7 +2,7 @@ import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '../trpc';
 
 import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
-import { portfolioIdSchema } from '@/root/schema/common';
+import { portfolioIdSchema, getInvestmentsByYearSchema } from '@/root/schema/common';
 
 export const investmentYearRouter = router({
   getAll: protectedProcedure.input(portfolioIdSchema).query(async ({ ctx, input }) => {
@@ -21,6 +21,52 @@ export const investmentYearRouter = router({
     return await ctx.prisma.investmentYear.findMany({
       where: { portfolioId, userId: session.user.id },
     });
+  }),
+  getByYear: protectedProcedure.input(getInvestmentsByYearSchema).query(async ({ ctx, input }) => {
+    const {
+      session: { user },
+    } = ctx;
+    const { portfolioId, year } = input;
+
+    /*
+      two possible cases in this situation
+      =====================================
+      1. user selects 'all'
+      2. user selects a specific investment year
+     */
+
+    if (year === 'all') {
+      const investments = await ctx.prisma.investment.findMany({
+        where: {
+          userId: user.id,
+          portfolioId,
+        },
+      });
+
+      return { investmentYearInfo: null, investmentsInThatYear: investments };
+    }
+
+    const investmentYear = await ctx.prisma.investmentYear.findFirst({
+      where: { userId: user.id, year, portfolioId },
+    });
+
+    if (!investmentYear) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Year ${input.year} could not be found! Try again with another year!`,
+      });
+    }
+
+    // grab all the investments that are related to the year that was found
+    const investmentsInThatYear = await ctx.prisma.investment.findMany({
+      where: {
+        userId: user.id,
+        investmentYear: input.year,
+        portfolioId,
+      },
+    });
+
+    return { investmentYearInfo: investmentYear, investmentsInThatYear };
   }),
   create: protectedProcedure
     .input(createInvestmentYearSchemaServer)
