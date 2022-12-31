@@ -37,5 +37,7 @@ export const formatEtfsPieChartData = (investments: Investment[] | undefined) =>
     dataForPieChart.push([renderPieChartLegend({ alias, etf, amount, currency }), Number(amount)]);
   });
 
+  console.log('dataForPieChart', dataForPieChart);
+
   return dataForPieChart;
 };

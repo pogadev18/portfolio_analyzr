@@ -1,4 +1,6 @@
 import { TRPCError } from '@trpc/server';
+import type { Investment } from '.prisma/client';
+
 import { router, protectedProcedure } from '../trpc';
 
 import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
@@ -44,15 +46,67 @@ export const investmentYearRouter = router({
         },
       });
 
-      // find all etfs duplicates
-      const etfTickers = investments.map((i) => i.etf);
-      const duplicatedETFS = checkDuplicatedETFs(etfTickers);
+      const etfISINs = investments?.map((i) => i.etf); // grab the ISINs of all the etfs
+      const duplicatedISINS = checkDuplicatedETFs(etfISINs); // check which ones are duplicated
 
-      console.log('duplicatedETFS!!!!', duplicatedETFS);
+      type MergedInfo = {
+        info: {
+          etfsMerged: string;
+        };
+        etf: string;
+        alias: string | null;
+        currency: string;
+        units: string;
+        amount: string;
+      };
 
-      return { investmentYearInfo: null, investmentsInThatYear: investments };
+      // store the duplicated ones into an array (these are the ones from the most recent years)
+      const duplicatedInvestments = investments?.filter(
+        ({ etf }, index) => etf === duplicatedISINS[index],
+      );
+
+      // store only the ones that are not duplicated
+      const notDuplicatedInvestments = investments?.filter(
+        ({ etf }, index) => etf !== duplicatedISINS[index],
+      );
+
+      /*
+        - add the sum (amount) of the duplicatedInvestments to the notDuplicatedInvestments
+        - add the units of the etfs as well
+
+         - output: finalInvestments = [
+          { etf: 'IS3N.DE', alias: '', amount: '2300', currency: 'EUR', units: '233' },
+        ];
+       */
+
+      const merged = duplicatedInvestments.reduce((mergedInvestments, item, index) => {
+        // 'mergedInvestments' has a default value equal to the starting point -> 'notDuplicatedInvestments
+        // 'item' is each individual item I'm looping through from the 'duplicatedInvestments' array on which I call the 'reduce' method
+
+        const result: MergedInfo[] = [
+          {
+            info: {
+              etfsMerged: `Merged ${item.etf} from ${item.investmentYear} with ${mergedInvestments[index]?.etf} from ${mergedInvestments[index]?.investmentYear}`,
+            },
+            etf: item.etf,
+            alias: item.alias,
+            currency: item.currency,
+            units: String(Number(item.units) + Number(mergedInvestments[index]?.units)),
+            amount: String(Number(item.amount) + Number(mergedInvestments[index]?.amount)),
+          },
+        ];
+
+        console.log(result);
+
+        return result;
+      }, notDuplicatedInvestments); // starting point
+
+      console.log('merged', merged);
+
+      return { investmentYearInfo: null, investmentsInThatYear: notDuplicatedInvestments };
     }
 
+    // user selects a specific investment year logic
     const investmentYear = await ctx.prisma.investmentYear.findFirst({
       where: { userId: user.id, year, portfolioId },
     });
