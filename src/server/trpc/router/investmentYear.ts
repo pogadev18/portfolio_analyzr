@@ -46,10 +46,9 @@ export const investmentYearRouter = router({
 
       // find all etfs duplicates
       const etfTickers = investments.map((i) => i.etf);
-      const hasDuplicates = checkDuplicatedETFs(etfTickers);
-      // const duplicates = investments.length === new Set(investments).size;
+      const duplicatedETFS = checkDuplicatedETFs(etfTickers);
 
-      console.log('hasDuplicates!!!!', hasDuplicates);
+      console.log('duplicatedETFS!!!!', duplicatedETFS);
 
       return { investmentYearInfo: null, investmentsInThatYear: investments };
     }
