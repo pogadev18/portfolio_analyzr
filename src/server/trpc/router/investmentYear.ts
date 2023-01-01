@@ -63,13 +63,26 @@ export const investmentYearRouter = router({
         (isin) => (groupedETFs[`${isin}`] = investments.filter(({ etf }) => etf === isin)),
       );
 
-      console.log('groupedETFs!!', groupedETFs);
+      // [{etf: eunl.de, amount: 2324}, {etf: iusn.de, amount: 332}]
+      let final;
+      type MergedInvestment = {
+        totalAmount: number;
+      };
 
-      /*
-         - output: finalInvestments = [
-          { etf: 'IS3N.DE', alias: '', amount: '2300', currency: 'EUR', units: '233' },
-        ];
-       */
+      for (const key in groupedETFs) {
+        console.log('hello', groupedETFs[key]);
+        final = groupedETFs[key]?.reduce((mergedInvestment: MergedInvestment[], item) => {
+          let amount = Number(item.amount);
+
+          return [
+            {
+              totalAmount: amount++,
+            },
+          ];
+        }, []);
+      }
+
+      console.log('TEST!!', final);
 
       return { investmentYearInfo: null, investmentsInThatYear: investments };
     }
