@@ -1,8 +1,7 @@
 import { TRPCError } from '@trpc/server';
+import type { Investment } from '.prisma/client';
 
 import { router, protectedProcedure } from '../trpc';
-
-import type { MergedETF } from '@/root/types';
 
 import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
 import { portfolioIdSchema, getInvestmentsByYearSchema } from '@/root/schema/common';
@@ -51,50 +50,28 @@ export const investmentYearRouter = router({
       const etfISINs = investments?.map((i) => i.etf); // grab the ISINs of all the etfs
       const duplicatedISINS = checkDuplicatedETFs(etfISINs); // check which ones are duplicated
 
-      // store the duplicated ones into an array (these are the ones from the most recent years)
-      const duplicatedInvestments = investments?.filter(
-        ({ etf }, index) => etf === duplicatedISINS[index],
-      );
-
-      // store only the ones that are not duplicated
-      const notDuplicatedInvestments = investments?.filter(
-        ({ etf }, index) => etf !== duplicatedISINS[index],
-      );
+      // group etfs by isin
+      const groupedETFs: { [key: string]: Investment[] } = {};
 
       /*
-        - add the sum (amount) of the duplicatedInvestments to the notDuplicatedInvestments
-        - add the units of the etfs as well
+          - filter the 'investments' array as many times as the length of the 'duplicatedISINS' array
+          - example: if there are 6 duplicated ISINS, then filter the 'investments' array 6 times
+            and each time create a property with the ISIN that has multiple investments and group
+            them together
+       */
+      duplicatedISINS.forEach(
+        (isin) => (groupedETFs[`${isin}`] = investments.filter(({ etf }) => etf === isin)),
+      );
 
+      console.log('groupedETFs!!', groupedETFs);
+
+      /*
          - output: finalInvestments = [
           { etf: 'IS3N.DE', alias: '', amount: '2300', currency: 'EUR', units: '233' },
         ];
        */
 
-      // TODO: fix this, not working!!!
-      const overallInvestments = investments.reduce(
-        (mergedInvestments: MergedETF[], item, index) => {
-          // 'mergedInvestments' has a default value equal to the starting point -> []
-          // 'item' is each individual etf from 'investments' array on which we call the 'reduce' method
-
-          const mergedETF = {
-            info: {
-              etfsMerged: `Merged ${item.etf} from ${item.investmentYear} with ${notDuplicatedInvestments[index]?.etf} from ${notDuplicatedInvestments[index]?.investmentYear}`,
-            },
-            etf: item.etf,
-            alias: item.alias,
-            currency: item.currency,
-            units: String(Number(item.units) + Number(notDuplicatedInvestments[index]?.units)),
-            amount: String(Number(item.amount) + Number(notDuplicatedInvestments[index]?.amount)),
-          };
-
-          mergedInvestments.push(mergedETF);
-
-          return mergedInvestments;
-        },
-        [],
-      ); // starting point
-
-      return { investmentYearInfo: null, investmentsInThatYear: overallInvestments };
+      return { investmentYearInfo: null, investmentsInThatYear: investments };
     }
 
     // user selects a specific investment year logic
