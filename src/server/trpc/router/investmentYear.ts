@@ -23,6 +23,7 @@ export const investmentYearRouter = router({
 
     return await ctx.prisma.investmentYear.findMany({
       where: { portfolioId, userId: session.user.id },
+      orderBy: { createdAt: 'desc' },
     });
   }),
   getByYear: protectedProcedure.input(getInvestmentsByYearSchema).query(async ({ ctx, input }) => {
@@ -49,17 +50,6 @@ export const investmentYearRouter = router({
       const etfISINs = investments?.map((i) => i.etf); // grab the ISINs of all the etfs
       const duplicatedISINS = checkDuplicatedETFs(etfISINs); // check which ones are duplicated
 
-      type MergedInfo = {
-        info: {
-          etfsMerged: string;
-        };
-        etf: string;
-        alias: string | null;
-        currency: string;
-        units: string;
-        amount: string;
-      };
-
       // store the duplicated ones into an array (these are the ones from the most recent years)
       const duplicatedInvestments = investments?.filter(
         ({ etf }, index) => etf === duplicatedISINS[index],
@@ -79,31 +69,41 @@ export const investmentYearRouter = router({
         ];
        */
 
-      const merged = duplicatedInvestments.reduce((mergedInvestments, item, index) => {
-        // 'mergedInvestments' has a default value equal to the starting point -> 'notDuplicatedInvestments
-        // 'item' is each individual item I'm looping through from the 'duplicatedInvestments' array on which I call the 'reduce' method
+      type mergedETF = {
+        info: {
+          etfsMerged: string;
+        };
+        etf: string | null;
+        alias: string | null;
+        currency: string | null;
+        units: string | null;
+        amount: string | null;
+      };
 
-        const result: MergedInfo[] = [
-          {
+      const overallInvestments = duplicatedInvestments.reduce(
+        (mergedInvestments: mergedETF[], item, index) => {
+          // 'mergedInvestments' has a default value equal to the starting point -> []
+          // 'item' is each individual etf from 'duplicatedInvestments' array on which I call the 'reduce' method
+
+          const mergedETF = {
             info: {
-              etfsMerged: `Merged ${item.etf} from ${item.investmentYear} with ${mergedInvestments[index]?.etf} from ${mergedInvestments[index]?.investmentYear}`,
+              etfsMerged: `Merged ${item.etf} from ${item.investmentYear} with ${notDuplicatedInvestments[index]?.etf} from ${notDuplicatedInvestments[index]?.investmentYear}`,
             },
             etf: item.etf,
             alias: item.alias,
             currency: item.currency,
-            units: String(Number(item.units) + Number(mergedInvestments[index]?.units)),
-            amount: String(Number(item.amount) + Number(mergedInvestments[index]?.amount)),
-          },
-        ];
+            units: String(Number(item.units) + Number(notDuplicatedInvestments[index]?.units)),
+            amount: String(Number(item.amount) + Number(notDuplicatedInvestments[index]?.amount)),
+          };
 
-        console.log(result);
+          mergedInvestments.push(mergedETF);
 
-        return result;
-      }, notDuplicatedInvestments); // starting point
+          return mergedInvestments;
+        },
+        [],
+      ); // starting point
 
-      console.log('merged', merged);
-
-      return { investmentYearInfo: null, investmentsInThatYear: notDuplicatedInvestments };
+      return { investmentYearInfo: null, investmentsInThatYear: overallInvestments };
     }
 
     // user selects a specific investment year logic
