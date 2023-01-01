@@ -1,4 +1,5 @@
 import type { Investment } from '.prisma/client';
+import type { MergedETF } from '@/root/types';
 
 // helper functions that format data for the Google charts library
 
@@ -30,14 +31,12 @@ function renderPieChartLegend({
   }
 }
 
-export const formatEtfsPieChartData = (investments: Investment[] | undefined) => {
+export const formatEtfsPieChartData = (investments: Investment[] | MergedETF[] | undefined) => {
   const dataForPieChart: (string | number)[][] = [['ETFs', 'Sum Invested']];
 
   investments?.map(({ alias, etf, amount, currency }) => {
     dataForPieChart.push([renderPieChartLegend({ alias, etf, amount, currency }), Number(amount)]);
   });
-
-  console.log('dataForPieChart', dataForPieChart);
 
   return dataForPieChart;
 };

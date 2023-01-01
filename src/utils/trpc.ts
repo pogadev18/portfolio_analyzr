@@ -4,7 +4,7 @@ import { type inferRouterInputs, type inferRouterOutputs } from '@trpc/server';
 import superjson from 'superjson';
 
 import { type AppRouter } from '../server/trpc/router/_app';
-import { oneDayInMs } from '@/root/constants';
+import { ONE_DAY_IN_MS } from '@/root/constants';
 
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') return ''; // browser should use relative url
@@ -29,7 +29,7 @@ export const trpc = createTRPCNext<AppRouter>({
       queryClientConfig: {
         defaultOptions: {
           queries: {
-            staleTime: oneDayInMs,
+            staleTime: ONE_DAY_IN_MS,
             useErrorBoundary: true,
           },
           mutations: {

@@ -1,7 +1,8 @@
 import { TRPCError } from '@trpc/server';
-import type { Investment } from '.prisma/client';
 
 import { router, protectedProcedure } from '../trpc';
+
+import type { MergedETF } from '@/root/types';
 
 import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
 import { portfolioIdSchema, getInvestmentsByYearSchema } from '@/root/schema/common';
@@ -69,21 +70,11 @@ export const investmentYearRouter = router({
         ];
        */
 
-      type mergedETF = {
-        info: {
-          etfsMerged: string;
-        };
-        etf: string | null;
-        alias: string | null;
-        currency: string | null;
-        units: string | null;
-        amount: string | null;
-      };
-
-      const overallInvestments = duplicatedInvestments.reduce(
-        (mergedInvestments: mergedETF[], item, index) => {
+      // TODO: fix this, not working!!!
+      const overallInvestments = investments.reduce(
+        (mergedInvestments: MergedETF[], item, index) => {
           // 'mergedInvestments' has a default value equal to the starting point -> []
-          // 'item' is each individual etf from 'duplicatedInvestments' array on which I call the 'reduce' method
+          // 'item' is each individual etf from 'investments' array on which we call the 'reduce' method
 
           const mergedETF = {
             info: {
