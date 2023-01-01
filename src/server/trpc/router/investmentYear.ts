@@ -71,6 +71,9 @@ export const investmentYearRouter = router({
 
       for (const key in groupedETFs) {
         console.log('hello', groupedETFs[key]);
+
+        // I want to reduce all the investments inside the grouped ISINS into one and "spit" an array out
+        // with all of them
         final = groupedETFs[key]?.reduce((mergedInvestment: MergedInvestment[], item) => {
           let amount = Number(item.amount);
 
