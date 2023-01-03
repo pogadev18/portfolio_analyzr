@@ -6,6 +6,7 @@ import { router, protectedProcedure } from '../trpc';
 import { createInvestmentYearSchemaServer } from '@/root/schema/investmentYearSchema';
 import { portfolioIdSchema, getInvestmentsByYearSchema } from '@/root/schema/common';
 import { checkDuplicatedETFs } from '@/root/utils/checkDuplicatedEtfs';
+import type { AllYearsInvestment } from '@/root/types';
 
 export const investmentYearRouter = router({
   getAll: protectedProcedure.input(portfolioIdSchema).query(async ({ ctx, input }) => {
@@ -23,7 +24,7 @@ export const investmentYearRouter = router({
 
     return await ctx.prisma.investmentYear.findMany({
       where: { portfolioId, userId: session.user.id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { year: 'desc' },
     });
   }),
   getByYear: protectedProcedure.input(getInvestmentsByYearSchema).query(async ({ ctx, input }) => {
@@ -63,31 +64,25 @@ export const investmentYearRouter = router({
         (isin) => (groupedETFs[`${isin}`] = investments.filter(({ etf }) => etf === isin)),
       );
 
-      // [{etf: eunl.de, amount: 2324}, {etf: iusn.de, amount: 332}]
-      let final;
-      type MergedInvestment = {
-        totalAmount: number;
-      };
+      const allYearsInvestments: AllYearsInvestment[] = [];
 
-      for (const key in groupedETFs) {
-        console.log('hello', groupedETFs[key]);
+      // TODO: think of some adjustments here (DRY)
+      for (const [key, value] of Object.entries(groupedETFs)) {
+        const totalAmountInvested = value.reduce((sum, item) => sum + Number(item.amount), 0);
+        const totalUnitsInvested = value.reduce((sum, item) => sum + Number(item.units), 0);
 
-        // I want to reduce all the investments inside the grouped ISINS into one and "spit" an array out
-        // with all of them
-        final = groupedETFs[key]?.reduce((mergedInvestment: MergedInvestment[], item) => {
-          let amount = Number(item.amount);
+        const obj = {
+          alias: value.map((i) => i.alias)[0],
+          etf: key,
+          amount: totalAmountInvested,
+          units: totalUnitsInvested,
+          currency: value.map((i) => i.currency)[0],
+        };
 
-          return [
-            {
-              totalAmount: amount++,
-            },
-          ];
-        }, []);
+        allYearsInvestments.push(obj);
       }
 
-      console.log('TEST!!', final);
-
-      return { investmentYearInfo: null, investmentsInThatYear: investments };
+      return { investmentYearInfo: null, investmentsInThatYear: allYearsInvestments };
     }
 
     // user selects a specific investment year logic

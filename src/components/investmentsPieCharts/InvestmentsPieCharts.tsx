@@ -60,7 +60,12 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
           ) : (
             <>
               <h2 className="text-3xl font-bold">
-                Total sum to invest in {investmentsData?.investmentYearInfo?.year}:{' '}
+                {investmentYearToFetch !== 'all' ? (
+                  <span>
+                    Total sum to invest in {investmentsData?.investmentYearInfo?.year}:&nbsp;
+                  </span>
+                ) : null}
+
                 <span>
                   {investmentsData?.investmentYearInfo?.sumToInvest}&nbsp;
                   {investmentsData?.investmentYearInfo?.currency}
