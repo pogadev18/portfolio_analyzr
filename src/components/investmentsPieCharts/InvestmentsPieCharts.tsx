@@ -4,7 +4,7 @@ import type { InvestmentYear } from '.prisma/client';
 import { useRouter } from 'next/router';
 
 import { formatEtfsPieChartData } from '@/root/utils/gooleChartsDataFormat';
-import { etfsPieChartOptions, currentYear } from '@/root/constants';
+import { ETFS_PIE_CHART_OPTIONS, CURRENT_YEAR } from '@/root/constants';
 import { trpc } from '@/root/utils/trpc';
 import LoadingSpinner from '@/root/components/loadingSpinner';
 
@@ -15,7 +15,7 @@ interface IInvestmentsPieChartsProps {
 
 const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieChartsProps) => {
   const router = useRouter();
-  const [investmentYearToFetch, setInvestmentYearToFetch] = useState<string>(String(currentYear));
+  const [investmentYearToFetch, setInvestmentYearToFetch] = useState<string>(String(CURRENT_YEAR));
 
   // the selected year by default is the current year
   const { data: investmentsData, isLoading: loadingInvestmentYear } =
@@ -60,7 +60,12 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
           ) : (
             <>
               <h2 className="text-3xl font-bold">
-                Total sum to invest in {investmentsData?.investmentYearInfo?.year}:{' '}
+                {investmentYearToFetch !== 'all' ? (
+                  <span>
+                    Total sum to invest in {investmentsData?.investmentYearInfo?.year}:&nbsp;
+                  </span>
+                ) : null}
+
                 <span>
                   {investmentsData?.investmentYearInfo?.sumToInvest}&nbsp;
                   {investmentsData?.investmentYearInfo?.currency}
@@ -81,7 +86,7 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
                 <Chart
                   chartType="PieChart"
                   data={formatEtfsPieChartData(investmentsData?.investmentsInThatYear)}
-                  options={etfsPieChartOptions}
+                  options={ETFS_PIE_CHART_OPTIONS}
                   width="100%"
                   height="800px"
                 />

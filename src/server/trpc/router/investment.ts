@@ -29,9 +29,28 @@ export const investmentRouter = router({
   create: protectedProcedure
     .input(createInvestmentSchemaServer)
     .mutation(async ({ ctx, input }) => {
-      // TODO: check if investment ticker already exists, and if exists, throw an error
+      const {
+        prisma,
+        session: { user },
+      } = ctx;
 
-      return ctx.prisma.investment.create({
+      const { etf, portfolioId, investmentYearId } = input;
+
+      const etfAlreadyExists = await ctx.prisma.investment.findFirst({
+        where: { userId: user.id, portfolioId, etf, investmentYearId },
+      });
+
+      if (etfAlreadyExists) {
+        const { alias, etf } = etfAlreadyExists;
+        throw new TRPCError({
+          code: 'CONFLICT',
+          message: `It looks like you already have ${
+            alias !== '' ? alias : etf
+          } as an investment. Consider editing the sum invested or if  you want to add it again, make sure you delete it first!`,
+        });
+      }
+
+      return prisma.investment.create({
         data: { ...input },
       });
     }),

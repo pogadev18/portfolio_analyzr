@@ -55,11 +55,12 @@ const InvestmentForm = () => {
       (year) => year.year === values.investmentYear,
     )?.id;
 
+    // todo: check the OR (||) operator, can lead to bugs
     const data = {
       ...values,
-      userId: session?.user?.id ?? '',
+      userId: session?.user?.id || '',
       portfolioId: id as string,
-      investmentYearId: investmentYearId ?? '',
+      investmentYearId: investmentYearId || '',
     };
 
     createInvestment(data);
