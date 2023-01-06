@@ -63,6 +63,8 @@ const InvestmentForm = () => {
         investmentYearId: investmentYearId,
       };
 
+      console.log('ce plm!');
+
       createInvestment(data);
     }
   }

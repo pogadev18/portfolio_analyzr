@@ -1,5 +1,5 @@
 // use this type to return allYearInvestments
-export type AllYearsInvestment = {
+export type AllInvestment = {
   etf: string;
   amount: number;
   units: number;
