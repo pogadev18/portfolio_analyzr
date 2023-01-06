@@ -17,7 +17,7 @@ function renderPieChartLegend({
   amount,
   currency,
 }: {
-  // TODO: type adjustments
+  // TODO: type adjustments??
   alias: string | null | undefined;
   etf: string;
   amount: string | number;

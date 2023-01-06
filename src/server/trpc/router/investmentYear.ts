@@ -18,7 +18,7 @@ export const investmentYearRouter = router({
     if (!portfolio) {
       throw new TRPCError({
         code: 'NOT_FOUND',
-        message: 'portfolio not found',
+        message: 'The portfolio you are looking for does not exists, try again',
       });
     }
 

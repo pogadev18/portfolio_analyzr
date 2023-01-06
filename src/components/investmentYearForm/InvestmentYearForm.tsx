@@ -36,13 +36,15 @@ const InvestmentYearForm = () => {
   });
 
   function onSubmit(values: CreateInvestmentYear) {
-    const data = {
-      userId: session?.user?.id ?? '',
-      portfolioId: portfolioId as string,
-      ...values,
-    };
+    if (session?.user) {
+      const data = {
+        userId: session.user.id,
+        portfolioId: portfolioId as string,
+        ...values,
+      };
 
-    createInvestmentYear(data);
+      createInvestmentYear(data);
+    }
   }
 
   // reset form after mutation is successful
