@@ -21,8 +21,6 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
   const { data: investmentsData, isLoading: loadingInvestmentYear } =
     trpc.investmentYear.getByYear.useQuery({ year: investmentYearToFetch, portfolioId });
 
-  console.log(investmentsData);
-
   return (
     <section className="flex p-10">
       <ul className="years-list">
