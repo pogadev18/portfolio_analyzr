@@ -21,6 +21,8 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
   const { data: investmentsData, isLoading: loadingInvestmentYear } =
     trpc.investmentYear.getByYear.useQuery({ year: investmentYearToFetch, portfolioId });
 
+  console.log(investmentsData);
+
   return (
     <section className="flex p-10">
       <ul className="years-list">
@@ -28,9 +30,10 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
           <>
             <li>
               <button
+                disabled={investmentsData?.investmentsInThatYear?.length === 0}
                 onClick={() => setInvestmentYearToFetch('all')}
                 type="button"
-                className={`my-2 w-32 rounded ${
+                className={`my-2 w-32 rounded disabled:cursor-not-allowed disabled:opacity-25 ${
                   investmentYearToFetch === 'all' ? 'bg-amber-300' : 'bg-amber-500'
                 }  p-5 hover:bg-amber-200`}
               >

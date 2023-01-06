@@ -55,15 +55,16 @@ const InvestmentForm = () => {
       (year) => year.year === values.investmentYear,
     )?.id;
 
-    // todo: check the OR (||) operator, can lead to bugs
-    const data = {
-      ...values,
-      userId: session?.user?.id || '',
-      portfolioId: id as string,
-      investmentYearId: investmentYearId || '',
-    };
+    if (session?.user && investmentYearId) {
+      const data = {
+        ...values,
+        userId: session.user.id,
+        portfolioId: id as string,
+        investmentYearId: investmentYearId,
+      };
 
-    createInvestment(data);
+      createInvestment(data);
+    }
   }
 
   // reset form after mutation is successful
@@ -133,7 +134,7 @@ const InvestmentForm = () => {
           <Controller
             control={control}
             render={({ field: { onChange, value, name } }) => {
-              // ugly "hack" for react-select onChange type (best solution I could find on internets)
+              // ugly "hack" for react-select onChange type (the best solution I could find on "internets")
               const isSelectOption = (v: any): v is ETFType => {
                 if ((v as ETFType).value !== undefined) return v.value;
                 return false;
