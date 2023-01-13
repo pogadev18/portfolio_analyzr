@@ -15,7 +15,9 @@ interface IInvestmentsPieChartsProps {
 
 const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieChartsProps) => {
   const router = useRouter();
-  const [investmentYearToFetch, setInvestmentYearToFetch] = useState<string>('all');
+  const [investmentYearToFetch, setInvestmentYearToFetch] = useState<string>(
+    String(Number(CURRENT_YEAR - 1)),
+  );
 
   // the selected year by default is the current year
   const { data: investmentsData, isLoading: loadingInvestmentYear } =
@@ -28,7 +30,6 @@ const InvestmentsPieCharts = ({ investmentYears, portfolioId }: IInvestmentsPieC
           <>
             <li>
               <button
-                disabled={investmentsData?.investments?.length === 0}
                 onClick={() => setInvestmentYearToFetch('all')}
                 type="button"
                 className={`my-2 w-32 rounded disabled:cursor-not-allowed disabled:opacity-25 ${

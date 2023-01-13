@@ -53,6 +53,7 @@ model User {
   portfolios      Portfolio[]
   investmentYears InvestmentYear[]
   investments     Investment[]
+  Cash            Cash[]
 }
 
 model Portfolio {
@@ -68,6 +69,7 @@ model Portfolio {
 
   investmentYears InvestmentYear[]
   investments     Investment[]
+  Cash            Cash[]
 }
 
 model InvestmentYear {
@@ -82,10 +84,11 @@ model InvestmentYear {
   User   User   @relation(fields: [userId], references: [id])
   userId String // this will be in the database in the Portfolio table
 
-  Portfolio   Portfolio    @relation(fields: [portfolioId], references: [id])
+  Portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
   portfolioId String // this will be in the database in the Investment table
 
-  Investment  Investment[]
+  Investment Investment[]
+  Cash       Cash[]
 }
 
 model Investment {
@@ -93,12 +96,32 @@ model Investment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  date     String
-  etf      String
-  alias    String?
-  units    String
-  amount   String
-  currency String
+  date           String
+  etf            String
+  alias          String?
+  units          String
+  amount         String
+  currency       String
+  investmentYear String
+
+  User   User   @relation(fields: [userId], references: [id])
+  userId String // this will be in the database in the Investment table
+
+  Portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolioId String // this will be in the database in the Investment table
+
+  InvestmentYear   InvestmentYear @relation(fields: [investmentYearId], references: [id])
+  investmentYearId String // this will be in the database in the Investment table
+}
+
+model Cash {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  date           String
+  amount         String
+  currency       String
   investmentYear String
 
   User   User   @relation(fields: [userId], references: [id])

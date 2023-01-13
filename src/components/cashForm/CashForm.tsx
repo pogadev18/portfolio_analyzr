@@ -1,55 +1,37 @@
-import dynamic from 'next/dynamic';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
 
-const Select = dynamic(import('react-select'), { ssr: false });
-
-import type { CreateInvestment } from '@/root/schema/investmentSchema';
-import type { ETFType } from '@/root/utils/etfsList';
-
-import { createInvestmentSchemaClient } from '@/root/schema/investmentSchema';
-import { etfsSelectList } from '@/root/utils/etfsList';
+import type { CreateCash } from '@/root/schema/cashSchema';
+import { createCashSchemaClient } from '@/root/schema/cashSchema';
 import { trpc } from '@/root/utils/trpc';
 
-const InvestmentForm = () => {
+const CashForm = () => {
   // keep track of the selected investment year
   const [selectedInvestmentYear, setSelectedInvestmentYear] = useState<string | null>(null);
-
   const router = useRouter();
+  const { data: session } = useSession();
+
   const { id } = router.query;
-  const trpcUtils = trpc.useContext();
 
   // get all investment years
   const { data: investmentYears } = trpc.investmentYear.getAll.useQuery({
     portfolioId: id as string,
   });
 
-  const {
-    mutateAsync: createInvestment,
-    isLoading,
-    isSuccess,
-  } = trpc.investment.create.useMutation({
-    onSuccess: async () => {
-      await trpcUtils.investment.getAll.invalidate();
-      await trpcUtils.investmentYear.getByYear.invalidate();
-    },
-  });
-  const { data: session } = useSession();
+  const { mutateAsync: addCash, isLoading: addingCash } = trpc.cash.create.useMutation();
 
   const {
     register,
     handleSubmit,
-    control,
-    reset,
     formState: { errors },
-  } = useForm<CreateInvestment>({
-    resolver: zodResolver(createInvestmentSchemaClient),
+  } = useForm<CreateCash>({
+    resolver: zodResolver(createCashSchemaClient),
   });
 
-  function onSubmit(values: CreateInvestment) {
+  function onSubmit(values: CreateCash) {
     // get the id of the investment year that the user selected
     const investmentYearId = investmentYears?.find(
       (year) => year.year === values.investmentYear,
@@ -63,26 +45,18 @@ const InvestmentForm = () => {
         investmentYearId: investmentYearId,
       };
 
-      createInvestment(data);
+      addCash(data);
     }
   }
 
-  // reset form after mutation is successful
-  useEffect(() => {
-    if (isSuccess) {
-      reset();
-      setSelectedInvestmentYear(null);
-    }
-  }, [isSuccess, reset]);
-
-  if (isLoading) return <p>creating investment...</p>;
+  if (addingCash) return <p>adding cash...</p>;
 
   return (
     <form className="flex-1" onSubmit={handleSubmit(onSubmit)}>
       <section className="w-1/3 p-4">
         <div className="mb-6">
           <label htmlFor="investmentYear" className="mb-2 block text-sm font-medium">
-            Choose an investment year for this investment
+            Choose an investment year
           </label>
           <select
             {...register('investmentYear')}
@@ -128,69 +102,8 @@ const InvestmentForm = () => {
         {errors.date && <p className="font-bold text-red-600">{errors.date.message}</p>}
 
         <div className="mb-6">
-          <label htmlFor="etfs" className="mb-2 block text-sm font-medium">
-            Select an ETF
-          </label>
-          <Controller
-            control={control}
-            render={({ field: { onChange, value, name } }) => {
-              // ugly "hack" for react-select onChange type (the best solution I could find on "internets")
-              const isSelectOption = (v: any): v is ETFType => {
-                if ((v as ETFType).value !== undefined) return v.value;
-                return false;
-              };
-
-              return (
-                <Select
-                  id="etfs"
-                  escapeClearsValue
-                  // inputRef={ref}
-                  value={etfsSelectList.find((etf: { value: string }) => etf.value === value)}
-                  name={name}
-                  options={etfsSelectList}
-                  onChange={(v) => {
-                    if (isSelectOption(v)) {
-                      onChange(v.value);
-                    }
-                  }}
-                />
-              );
-            }}
-            name="etf"
-          />
-        </div>
-        {errors.etf && <p className="font-bold text-red-600">{errors.etf.message}</p>}
-
-        <div className="mb-6">
-          <label htmlFor="alias" className="mb-2 block text-sm font-medium ">
-            ETF Alias
-          </label>
-          <input
-            type="text"
-            id="alias"
-            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            {...register('alias')}
-          />
-        </div>
-        {errors.alias && <p className="font-bold text-red-600">{errors.alias.message}</p>}
-
-        <div className="mb-6">
-          <label htmlFor="units" className="mb-2 block text-sm font-medium">
-            Units bought
-          </label>
-          <input
-            type="number"
-            id="units"
-            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            required
-            {...register('units')}
-          />
-        </div>
-        {errors.units && <p className="font-bold text-red-600">{errors.units.message}</p>}
-
-        <div className="mb-6">
           <label htmlFor="amount" className="mb-2 block text-sm font-medium">
-            Total price (EUR)
+            Total
           </label>
           <div className="flex items-center">
             <div className="price flex-1">
@@ -229,4 +142,4 @@ const InvestmentForm = () => {
   );
 };
 
-export default InvestmentForm;
+export default CashForm;

@@ -1,5 +1,5 @@
 import type { Investment } from '.prisma/client';
-import type { AllYearsInvestment } from '@/root/types';
+import type { AllInvestment } from '@/root/types';
 
 // helper functions that format data for the Google charts library
 
@@ -23,7 +23,9 @@ function renderPieChartLegend({
   amount: string | number;
   currency: string | undefined;
 }) {
-  const sumInvestedAndCurrency = `${amount} ${currency}`;
+  // todo: refactor to be only number the 'amount' and 'units' values (also in the Prisma schema and in Zod)
+  const amountWith2Decimals = Number(amount).toFixed(2);
+  const sumInvestedAndCurrency = `${amountWith2Decimals} ${currency}`;
 
   if (alias !== '') {
     return `${alias} - ${sumInvestedAndCurrency}`;
@@ -32,9 +34,7 @@ function renderPieChartLegend({
   }
 }
 
-export const formatEtfsPieChartData = (
-  investments: Investment[] | AllYearsInvestment[] | undefined,
-) => {
+export const formatEtfsPieChartData = (investments: Investment[] | AllInvestment[] | undefined) => {
   const dataForPieChart: (string | number)[][] = [['ETFs', 'Sum Invested']];
 
   investments?.map(({ alias, etf, amount, currency }) => {

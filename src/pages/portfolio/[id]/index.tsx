@@ -46,9 +46,17 @@ const PortfolioPage = () => {
         <button
           disabled={investmentYears?.length === 0}
           onClick={() => router.push(`/portfolio/${id}/new-investment`)}
-          className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500 disabled:bg-gray-300"
+          className="my-3 mr-3 rounded bg-red-800 p-3 text-white hover:bg-red-500 disabled:bg-gray-300"
         >
           add investment
+        </button>
+
+        <button
+          disabled={investmentYears?.length === 0}
+          onClick={() => router.push(`/portfolio/${id}/add-cash`)}
+          className="my-3 rounded bg-red-800 p-3 text-white hover:bg-red-500 disabled:bg-gray-300"
+        >
+          add cash
         </button>
 
         <InvestmentsPieCharts investmentYears={investmentYears} portfolioId={id as string} />
