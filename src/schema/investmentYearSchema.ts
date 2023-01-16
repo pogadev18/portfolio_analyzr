@@ -2,8 +2,8 @@ import z from 'zod';
 import { userIdSchema, portfolioIdSchema } from '@/root/schema/common';
 
 export const createInvestmentYearSchemaClient = z.object({
-  year: z.string(),
-  sumToInvest: z.string(),
+  year: z.string().min(4),
+  sumToInvest: z.string().min(2),
   currency: z.string(),
 });
 

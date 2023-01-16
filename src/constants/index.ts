@@ -5,3 +5,5 @@ export const CURRENT_YEAR = new Date().getFullYear();
 export const ETFS_PIE_CHART_OPTIONS = {
   is3D: true,
 };
+
+export const CURRENCIES = ['EUR', 'USD', 'RON'];

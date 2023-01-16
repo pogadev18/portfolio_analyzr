@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import type { CreatePortfolio } from '@/root/schema/portfolioSchema';
 import { createPortfolioSchemaClient } from '@/root/schema/portfolioSchema';
 import { trpc } from '@/root/utils/trpc';
+import FormField from '../formField';
 
 const PortfolioForm = () => {
   const { data: session } = useSession();
@@ -37,18 +38,13 @@ const PortfolioForm = () => {
     <form onSubmit={handleSubmit(onSubmit)} className="text-left">
       <section className="w-1/3 p-4">
         <div className="mb-6">
-          <label htmlFor="name" className="mb-2 block text-sm font-medium ">
-            Portfolio Name
-          </label>
-          <input
-            type="text"
+          <FormField
             id="name"
-            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            required
-            {...register('name')}
+            label="Portfolio Name"
+            error={errors.name?.message}
+            inputProps={register('name')}
           />
         </div>
-        {errors.name && <p className="font-bold text-red-600">{errors.name.message}</p>}
 
         <div className="mb-6">
           <label htmlFor="desc" className="mb-2 block text-sm font-medium ">

@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import type { CreateCash } from '@/root/schema/cashSchema';
 import { createCashSchemaClient } from '@/root/schema/cashSchema';
 import { trpc } from '@/root/utils/trpc';
+import { CURRENCIES } from '@/root/constants';
 
 const CashForm = () => {
   // keep track of the selected investment year
@@ -100,7 +101,6 @@ const CashForm = () => {
           />
         </div>
         {errors.date && <p className="font-bold text-red-600">{errors.date.message}</p>}
-
         <div className="mb-6">
           <label htmlFor="amount" className="mb-2 block text-sm font-medium">
             Total
@@ -116,15 +116,18 @@ const CashForm = () => {
                 {...register('amount')}
               />
             </div>
+
             <div className="currency">
               <select
                 className="block w-full rounded-lg rounded-bl-none rounded-tl-none border border-gray-300 p-2.5 text-sm text-gray-900
             focus:border-blue-500 focus:ring-blue-500"
                 {...register('currency')}
               >
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-                <option value="RON">RON</option>
+                {CURRENCIES.map((currency) => (
+                  <option key={currency} value={currency}>
+                    {currency}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

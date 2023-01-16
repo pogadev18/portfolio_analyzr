@@ -1,15 +1,59 @@
 import Head from 'next/head';
 import type { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
+
+import type { CreateInvestment } from '@/root/schema/investmentSchema';
 
 import InvestmentForm from '@/root/components/investmentForm';
+import NavLink from '@/root/components/navLink';
 
 import { requireAuth } from '@/root/utils/requireAuth';
-import NavLink from '@/root/components/navLink';
+import { trpc } from '@/root/utils/trpc';
 
 const NewInvestment = () => {
   const router = useRouter();
   const { id } = router.query;
+
+  const trpcUtils = trpc.useContext();
+
+  // get all investment years
+  const { data: investmentYears, isSuccess: investmentYearsFetched } =
+    trpc.investmentYear.getAll.useQuery({
+      portfolioId: id as string,
+    });
+
+  const {
+    mutateAsync: createInvestment,
+    isLoading,
+    // isSuccess,
+  } = trpc.investment.create.useMutation({
+    onSuccess: async () => {
+      await trpcUtils.investment.getAll.invalidate();
+      await trpcUtils.investmentYear.getByYear.invalidate();
+    },
+  });
+  const { data: session } = useSession();
+
+  function handleCreateInvestment(values: CreateInvestment) {
+    // get the id of the investment year that the user selected
+    const investmentYearId = investmentYears?.find(
+      (year) => year.year === values.investmentYear,
+    )?.id;
+
+    if (session?.user && investmentYearId) {
+      const data = {
+        ...values,
+        userId: session.user.id,
+        portfolioId: id as string,
+        investmentYearId: investmentYearId,
+      };
+
+      createInvestment(data);
+    }
+  }
+
+  if (isLoading) return <p>creating investment...</p>;
 
   return (
     <>
@@ -21,7 +65,12 @@ const NewInvestment = () => {
       <main className="p-5">
         <NavLink href={`/portfolio/${id}`}>Back to Portfolio</NavLink>
         <h1>Add Investment</h1>
-        <InvestmentForm />
+        {investmentYearsFetched && (
+          <InvestmentForm
+            onSubmitReady={handleCreateInvestment}
+            investmentsYears={investmentYears}
+          />
+        )}
       </main>
     </>
   );

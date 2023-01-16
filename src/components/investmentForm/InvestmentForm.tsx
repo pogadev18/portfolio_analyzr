@@ -1,9 +1,10 @@
 import dynamic from 'next/dynamic';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import type { InvestmentYear } from '@prisma/client';
+
+import FormField from '@/root/components/formField';
 
 const Select = dynamic(import('react-select'), { ssr: false });
 
@@ -12,73 +13,37 @@ import type { ETFType } from '@/root/utils/etfsList';
 
 import { createInvestmentSchemaClient } from '@/root/schema/investmentSchema';
 import { etfsSelectList } from '@/root/utils/etfsList';
-import { trpc } from '@/root/utils/trpc';
+import { CURRENCIES } from '@/root/constants';
 
-const InvestmentForm = () => {
+interface InvestmentFormProps {
+  onSubmitReady: (data: CreateInvestment) => void;
+  investmentsYears: InvestmentYear[] | undefined;
+}
+
+const InvestmentForm = (props: InvestmentFormProps) => {
   // keep track of the selected investment year
   const [selectedInvestmentYear, setSelectedInvestmentYear] = useState<string | null>(null);
-
-  const router = useRouter();
-  const { id } = router.query;
-  const trpcUtils = trpc.useContext();
-
-  // get all investment years
-  const { data: investmentYears } = trpc.investmentYear.getAll.useQuery({
-    portfolioId: id as string,
-  });
-
-  const {
-    mutateAsync: createInvestment,
-    isLoading,
-    isSuccess,
-  } = trpc.investment.create.useMutation({
-    onSuccess: async () => {
-      await trpcUtils.investment.getAll.invalidate();
-      await trpcUtils.investmentYear.getByYear.invalidate();
-    },
-  });
-  const { data: session } = useSession();
 
   const {
     register,
     handleSubmit,
     control,
-    reset,
     formState: { errors },
   } = useForm<CreateInvestment>({
     resolver: zodResolver(createInvestmentSchemaClient),
   });
 
-  function onSubmit(values: CreateInvestment) {
-    // get the id of the investment year that the user selected
-    const investmentYearId = investmentYears?.find(
-      (year) => year.year === values.investmentYear,
-    )?.id;
-
-    if (session?.user && investmentYearId) {
-      const data = {
-        ...values,
-        userId: session.user.id,
-        portfolioId: id as string,
-        investmentYearId: investmentYearId,
-      };
-
-      createInvestment(data);
-    }
-  }
-
+  // TODO: useImperativeHook
   // reset form after mutation is successful
-  useEffect(() => {
-    if (isSuccess) {
-      reset();
-      setSelectedInvestmentYear(null);
-    }
-  }, [isSuccess, reset]);
-
-  if (isLoading) return <p>creating investment...</p>;
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     reset();
+  //     setSelectedInvestmentYear(null);
+  //   }
+  // }, [isSuccess, reset]);
 
   return (
-    <form className="flex-1" onSubmit={handleSubmit(onSubmit)}>
+    <form className="flex-1" onSubmit={handleSubmit(props.onSubmitReady)}>
       <section className="w-1/3 p-4">
         <div className="mb-6">
           <label htmlFor="investmentYear" className="mb-2 block text-sm font-medium">
@@ -86,7 +51,6 @@ const InvestmentForm = () => {
           </label>
           <select
             {...register('investmentYear')}
-            required
             id="investmentYear"
             onChange={(event) =>
               // todo: improve this logic maybe?
@@ -94,8 +58,8 @@ const InvestmentForm = () => {
             }
             className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
           >
-            <option value="">Choose...</option>
-            {investmentYears?.map((year) => (
+            <option value={0}>Choose...</option>
+            {props.investmentsYears?.map((year) => (
               <option value={year.year} key={year.id}>
                 {year.year}
               </option>
@@ -111,21 +75,19 @@ const InvestmentForm = () => {
             - also, disable the input until an investment year is selected
         */}
         <div className="mb-6">
-          <label htmlFor="date" className="mb-2 block text-sm font-medium">
-            Date of investment (month and day)
-          </label>
-          <input
-            disabled={!selectedInvestmentYear}
-            min={`${selectedInvestmentYear}-01-01`}
-            max={`${selectedInvestmentYear}-12-31`}
-            type="date"
+          <FormField
             id="date"
-            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            required
-            {...register('date')}
+            label="Date of investment (month and day)"
+            error={errors.date?.message}
+            type="date"
+            inputProps={{
+              ...register('date'),
+              disabled: !selectedInvestmentYear,
+              min: `${selectedInvestmentYear}-01-01`,
+              max: `${selectedInvestmentYear}-12-31`,
+            }}
           />
         </div>
-        {errors.date && <p className="font-bold text-red-600">{errors.date.message}</p>}
 
         <div className="mb-6">
           <label htmlFor="etfs" className="mb-2 block text-sm font-medium">
@@ -144,7 +106,7 @@ const InvestmentForm = () => {
                 <Select
                   id="etfs"
                   escapeClearsValue
-                  // inputRef={ref}
+                  {...register('etf')}
                   value={etfsSelectList.find((etf: { value: string }) => etf.value === value)}
                   name={name}
                   options={etfsSelectList}
@@ -162,45 +124,34 @@ const InvestmentForm = () => {
         {errors.etf && <p className="font-bold text-red-600">{errors.etf.message}</p>}
 
         <div className="mb-6">
-          <label htmlFor="alias" className="mb-2 block text-sm font-medium ">
-            ETF Alias
-          </label>
-          <input
-            type="text"
+          <FormField
+            error={errors.alias?.message}
             id="alias"
-            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            {...register('alias')}
+            label="ETF Alias"
+            inputProps={register('alias')}
           />
         </div>
         {errors.alias && <p className="font-bold text-red-600">{errors.alias.message}</p>}
 
         <div className="mb-6">
-          <label htmlFor="units" className="mb-2 block text-sm font-medium">
-            Units bought
-          </label>
-          <input
-            type="number"
+          <FormField
             id="units"
-            className="block w-full rounded-lg border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-            required
-            {...register('units')}
+            label="Units bought"
+            error={errors.units?.message}
+            type="number"
+            inputProps={register('units')}
           />
         </div>
-        {errors.units && <p className="font-bold text-red-600">{errors.units.message}</p>}
 
         <div className="mb-6">
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
-            Total price (EUR)
-          </label>
           <div className="flex items-center">
             <div className="price flex-1">
-              <input
-                type="number"
-                step="any"
+              <FormField
                 id="amount"
-                className="block w-full rounded-lg rounded-tr-none rounded-br-none border border-gray-300 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-                required
-                {...register('amount')}
+                label="Total price"
+                error={errors.amount?.message}
+                type="number"
+                inputProps={register('amount')}
               />
             </div>
             <div className="currency">
@@ -209,14 +160,15 @@ const InvestmentForm = () => {
             focus:border-blue-500 focus:ring-blue-500"
                 {...register('currency')}
               >
-                <option value="EUR">EUR</option>
-                <option value="USD">USD</option>
-                <option value="RON">RON</option>
+                {CURRENCIES.map((currency) => (
+                  <option key={currency} value={currency}>
+                    {currency}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
         </div>
-        {errors.amount && <p className="font-bold text-red-600">{errors.amount.message}</p>}
 
         <button
           type="submit"
